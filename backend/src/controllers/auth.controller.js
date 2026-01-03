@@ -39,25 +39,34 @@ export const register = async (req, res) => {
     // 4. URL Verifikasi (Frontend Port 5173)
 const verifyUrl = `${env.clientUrl}/verify-email?token=${verificationToken}`;
     // 5. Kirim Email
-    await sendEmail({
-      email: user.email,
-      subject: 'Aktivasi Akun Rully Store',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;">
-          <h2 style="color: #232f3e;">Verifikasi Alamat Email Anda</h2>
-          <p>Halo ${name},</p>
-          <p>Terima kasih telah mendaftar di Rully Store. Klik tombol di bawah untuk verifikasi:</p>
-          <a href="${verifyUrl}" style="display: inline-block; background-color: #ffd814; color: black; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-            Verifikasi Akun
-          </a>
-        </div>
-      `
-    });
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Aktivasi Akun Rully Store',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;">
+            <h2 style="color: #232f3e;">Verifikasi Alamat Email Anda</h2>
+            <p>Halo ${name},</p>
+            <p>Terima kasih telah mendaftar di Rully Store. Klik tombol di bawah untuk verifikasi:</p>
+            <a href="${verifyUrl}" style="display: inline-block; background-color: #ffd814; color: black; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+              Verifikasi Akun
+            </a>
+          </div>
+        `
+      });
 
     res.status(201).json({
       success: true,
       message: 'Email verifikasi telah dikirim ke Mailtrap.'
-    });
+      });
+    } catch (emailError) {
+      console.error("❌ Gagal mengirim email verifikasi:", emailError.message);
+      // Tetap return sukses karena user sudah terbuat di DB
+      res.status(201).json({
+        success: true,
+        message: 'Registrasi berhasil, namun email verifikasi gagal terkirim. Silakan hubungi admin.'
+      });
+    }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
