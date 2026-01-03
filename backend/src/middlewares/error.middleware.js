@@ -1,4 +1,6 @@
 import AppError from '../utils/AppError.js';
+import logger from '../lib/logger.js';
+
 
 // Handler: Error MongoDB Nilai Duplikat (11000)
 const handleDuplicateFieldsDB = (err) => {
