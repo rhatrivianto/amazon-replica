@@ -2,8 +2,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 // Definisikan URL di luar agar bisa di-log untuk debugging
+const prodUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const baseUrl = import.meta.env.MODE === 'production'
-  ? import.meta.env.VITE_API_BASE_URL
+  ? (prodUrl.endsWith('/api/v1') ? prodUrl : `${prodUrl}/api/v1`)
   : 'http://localhost:5000/api/v1';
 
 console.log("🚀 API Base URL being used:", baseUrl);
