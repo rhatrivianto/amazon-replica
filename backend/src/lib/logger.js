@@ -14,14 +14,12 @@ const logger = winston.createLogger({
   ],
 });
 
-// Jika bukan di production, cetak juga ke console dengan warna
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    ),
-  }));
-}
+// Selalu log ke Console (agar muncul di Dashboard Railway/Vercel)
+logger.add(new winston.transports.Console({
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.simple()
+  ),
+}));
 
 export default logger;
