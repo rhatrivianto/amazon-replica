@@ -1,0 +1,286 @@
+
+
+// ===== FILE: api.constants.js =====
+
+// src/shared/utils/constants/api.constants.js
+
+// Untuk Vite (React dengan Vite)
+const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:5000/api';
+
+// Atau untuk Create React App (CRA)
+// const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+export { API_BASE_URL };
+
+export const API_ENDPOINTS = {
+  AUTH: {
+    REGISTER: '/auth/register',
+    LOGIN: '/auth/login',
+    LOGOUT: '/auth/logout',
+    ME: '/auth/me',
+    REFRESH_TOKEN: '/auth/refresh-token',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
+    CREATE_ADMIN: '/auth/create-admin',
+  },
+  USER: {
+    PROFILE: '/user/profile',
+    PASSWORD: '/user/password',
+    ADDRESSES: '/user/addresses',
+    ORDERS: '/user/orders',
+  },
+  PRODUCTS: '/products',
+  CATEGORIES: '/categories',
+  CART: '/cart',
+  ORDERS: '/orders',
+  WISHLIST: '/wishlist',
+  COUPONS: '/coupons',
+  REVIEWS: '/reviews',
+  SEARCH: '/search',
+  ANALYTICS: '/analytics',
+  INVENTORY: '/inventory',
+  PAYMENTS: '/payments',
+  CHECKOUT: '/checkout',
+};
+
+export const HTTP_METHODS = {
+  GET: 'GET',
+  POST: 'POST',
+  PUT: 'PUT',
+  DELETE: 'DELETE',
+  PATCH: 'PATCH',
+};
+
+export const HTTP_STATUS = {
+  OK: 200,
+  CREATED: 201,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  VALIDATION_ERROR: 422,
+  TOO_MANY_REQUESTS: 429,
+  SERVER_ERROR: 500,
+};
+
+export const API_TIMEOUT = 30000; // 30 seconds
+
+// ===== FILE: app.constants.js =====
+
+export const isDevelopment =
+  import.meta.env.VITE_NODE_ENV === "development" ||
+  window.location.hostname === "localhost";
+
+export const FEATURE_FLAGS = {
+  enableReviewLikes: true,
+  enableProductRecommendations: true,
+  enableAdvancedAnalytics: false,
+};
+
+
+// ===== FILE: auth.constants.js =====
+
+// src/shared/utils/constants/auth.constants.js
+
+export const STORAGE_KEYS = {
+  TOKEN: "auth_token",
+  USER: "auth_user",
+  REFRESH_TOKEN: "refresh_token",
+  SESSION_EXPIRY: "session_expiry",
+};
+
+export const USER_ROLES = {
+  ADMIN: "admin",
+  CUSTOMER: "customer",
+  GUEST: "guest",
+};
+
+export const AUTH_ERRORS = {
+  INVALID_CREDENTIALS: "Invalid email or password",
+  USER_EXISTS: "User already exists",
+  TOKEN_EXPIRED: "Session expired, please login again",
+  UNAUTHORIZED: "Unauthorized access",
+  FORBIDDEN: "Access denied",
+  NETWORK_ERROR: "Network error, please check your connection",
+};
+
+export const AUTH_SUCCESS = {
+  REGISTER: "Registration successful",
+  LOGIN: "Login successful",
+  LOGOUT: "Logged out successfully",
+  PROFILE_UPDATED: "Profile updated successfully",
+  PASSWORD_CHANGED: "Password changed successfully",
+};
+
+export const PASSWORD_REQUIREMENTS = {
+  MIN_LENGTH: 8,
+  REQUIRE_UPPERCASE: true,
+  REQUIRE_LOWERCASE: true,
+  REQUIRE_NUMBER: true,
+  REQUIRE_SPECIAL: false, // Optional
+};
+
+export const SESSION_CONFIG = {
+  TOKEN_EXPIRY: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+  REFRESH_WINDOW: 5 * 60 * 1000, // 5 minutes before expiry
+  AUTO_LOGOUT: 30 * 60 * 1000, // Auto logout after 30 minutes of inactivity
+};
+
+
+// ===== FILE: cart.constants.js =====
+
+// Konstanta terkait cart
+export const CART_MIN_QUANTITY = 1;
+export const CART_MAX_QUANTITY = 99; // batas maksimal sesuai kebutuhan
+
+// ===== FILE: currency.constants.js =====
+
+export const CURRENCY = {
+  CODE: "IDR",        // mata uang default
+  LOCALE: "id-ID",    // locale untuk Indonesia
+  SYMBOL: "Rp",       // symbol tampilan fallback
+};
+
+
+// ===== FILE: error.constants.js =====
+
+export const ERROR_MESSAGES = {
+  // Auth Errors
+  INVALID_CREDENTIALS: "Invalid email or password",
+  UNAUTHORIZED: "You need to log in to continue",
+  FORBIDDEN: "You don't have permission to perform this action",
+  SESSION_EXPIRED: "Your session has expired, please log in again",
+  TOKEN_MISSING: "Token is missing from response",
+  USER_NOT_FOUND: "User not found",
+  
+  // Validation Errors
+  INVALID_EMAIL: "Please enter a valid email address",
+  INVALID_PASSWORD: "Password must be at least 6 characters",
+  PASSWORD_MISMATCH: "Passwords do not match",
+  
+  // Network Errors
+  NETWORK_ERROR: "Failed to connect to the server",
+  SERVER_ERROR: "Internal server error",
+  TIMEOUT: "Request timeout, please try again",
+  
+  // General
+  DEFAULT: "An error occurred, please try again",
+  REQUIRED_FIELD: "This field is required",
+};
+
+
+// ===== FILE: file.constants.js =====
+
+export const FILE_CONSTANTS = {
+  MAX_IMAGE_SIZE: 5 * 1024 * 1024, // 5 MB
+  MAX_FILE_SIZE: 5 * 1024 * 1024,  // 5 MB
+  ALLOWED_IMAGE_TYPES: ["image/jpeg", "image/png", "image/webp"],
+};
+
+export const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+];
+
+export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+
+// ===== FILE: index.js =====
+
+export * from "./api.constants";
+export * from "./app.constants";
+export * from "./product.constants";
+export * from "./order.constants";
+export * from "./user.constants";
+export * from "./review.constants";
+export * from "./file.constants";
+export * from "./ui.constants";
+export * from "./error.constants";
+export * from "./success.constants";
+export * from "./auth.constants";
+export * from "./cart.constants";
+export * from "./currency.constants";
+
+// ===== FILE: order.constants.js =====
+
+export const ORDER_STATUS = {
+  PENDING: "pending",
+  PROCESSING: "processing",
+  SHIPPED: "shipped",
+  DELIVERED: "delivered",
+  CANCELED: "canceled",
+};
+
+export const ORDER_FILTERS = {
+  RECENT: "recent",
+  ACTIVE: "active",
+  COMPLETED: "completed",
+};
+
+
+// ===== FILE: product.constants.js =====
+
+export const PRODUCT_CATEGORIES = {
+  ELECTRONICS: "electronics",
+  FASHION: "fashion",
+  HOME: "home",
+  BEAUTY: "beauty",
+  SPORTS: "sports",
+  BOOKS: "books",
+  TOYS: "toys",
+  AUTOMOTIVE: "Automotive",
+};
+
+export const PRODUCT_CATEGORIES_ARRAY = Object.values(PRODUCT_CATEGORIES);
+
+
+
+export const PRODUCT_SPECIFICATION = {
+  MIN_NAME_LENGTH: 2,
+  MAX_NAME_LENGTH: 100,
+  MIN_DESCRIPTION_LENGTH: 10,
+  MAX_DESCRIPTION_LENGTH: 1000,
+  MIN_PRICE: 0.01,
+  MAX_PRICE: 1000000,
+};
+
+
+// ===== FILE: review.constants.js =====
+
+export const REVIEW_SORT_OPTIONS = {
+  LATEST: "latest",
+  HIGHEST: "highest",
+  LOWEST: "lowest",
+};
+
+
+// ===== FILE: success.constants.js =====
+
+export const SUCCESS_MESSAGES = {
+  UPDATED: "Successfully updated!",
+  CREATED: "Successfully created!",
+  DELETED: "Successfully deleted!",
+};
+
+
+// ===== FILE: ui.constants.js =====
+
+export const PAGINATION = {
+  ITEMS_PER_PAGE: 12,
+};
+
+export const UI_DELAY = {
+  TOAST_DURATION: 2000,
+  LOADING_DELAY: 500,
+};
+
+
+// ===== FILE: user.constants.js =====
+
+export const USER_ROLES = {
+  ADMIN: "admin",
+  USER: "user",
+  PROFILE: 'profile"'
+};

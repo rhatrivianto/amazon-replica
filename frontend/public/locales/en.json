@@ -1,0 +1,19 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again"
+  },
+  "nav": {
+    "search": "Search Amazon",
+    "cart": "Cart",
+    "orders": "Returns & Orders",
+    "hello": "Hello",
+    "account": "Accounts & Lists"
+  },
+  "home": {
+    "inspired": "Inspired by your browsing history",
+    "shop_now": "Shop now",
+    "see_more": "See more"
+  }
+}

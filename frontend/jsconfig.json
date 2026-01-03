@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "baseUrl": "src",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "paths": {
+      "app/*": ["app/*"],
+      "features/*": ["features/*"],
+      "shared/*": ["shared/*"],
+      "pages/*": ["pages/*"]
+    },
+    "jsx": "react-jsx"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "build"]
+}
