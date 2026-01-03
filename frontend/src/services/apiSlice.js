@@ -8,6 +8,7 @@ const baseUrl = import.meta.env.MODE === 'production'
   : 'http://localhost:5000/api/v1';
 
 console.log("🚀 API Base URL being used:", baseUrl);
+console.log("🔧 Environment Mode:", import.meta.env.MODE);
 
 export const apiSlice = createApi({
   reducerPath: 'api',
