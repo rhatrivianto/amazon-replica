@@ -37,10 +37,14 @@ export const register = async (req, res) => {
     });
 
     // 4. URL Verifikasi (Frontend Port 5173)
-const verifyUrl = `${env.clientUrl}/verify-email?token=${verificationToken}`;
+    const verifyUrl = `${env.clientUrl}/verify-email?token=${verificationToken}`;
+
+    // URL Alternatif: Langsung ke Backend (Bypass Frontend jika 404)
+    const directVerifyUrl = `https://amazon-replica-production.up.railway.app/api/v1/auth/verify-email?token=${verificationToken}`;
 
     // --- DEBUG: Tampilkan Link di Log Railway agar bisa diklik manual ---
-    console.log("🚀 [DEBUG] Verification Link (Klik ini jika email tidak masuk):", verifyUrl);
+    console.log("🚀 [DEBUG] Frontend Link:", verifyUrl);
+    console.log("🚀 [DEBUG] Direct Backend Link (Gunakan ini jika Frontend 404):", directVerifyUrl);
 
     // 5. Kirim Email
     try {
