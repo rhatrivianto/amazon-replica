@@ -38,6 +38,10 @@ export const register = async (req, res) => {
 
     // 4. URL Verifikasi (Frontend Port 5173)
 const verifyUrl = `${env.clientUrl}/verify-email?token=${verificationToken}`;
+
+    // --- DEBUG: Tampilkan Link di Log Railway agar bisa diklik manual ---
+    console.log("🚀 [DEBUG] Verification Link (Klik ini jika email tidak masuk):", verifyUrl);
+
     // 5. Kirim Email
     try {
       await sendEmail({
