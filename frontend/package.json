@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
-    "cache-clean": "echo 'Force Vercel Reinstall 01'"
+    "cache-clean": "echo 'Force Vercel Reinstall 02'"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
