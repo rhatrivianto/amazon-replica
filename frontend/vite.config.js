@@ -9,4 +9,8 @@ export default defineConfig({
     react(),
     jsconfigPaths() // Tambahkan plugin di sini
   ],
+  // Tambahkan konfigurasi build ini untuk memancing Vercel melakukan build ulang
+  build: {
+    emptyOutDir: true,
+  }
 })
