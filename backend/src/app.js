@@ -72,12 +72,14 @@ app.get("/", (req, res) => {
 // --- 6. SERVING FRONTEND IN PRODUCTION ---
 if (isProduction) {
   const frontendPath = path.join(__dirname, "../frontend/dist");
-  app.use(express.static(frontendPath));
-  app.get("*", (_, res) => res.sendFile(path.join(frontendPath, "index.html")));
+  // Cek apakah folder ada sebelum serve (Agar aman di Railway, tapi tetap jalan di Local jika ada build)
+  if (fs.existsSync(frontendPath)) {
+    app.use(express.static(frontendPath));
+    app.get("*", (_, res) => res.sendFile(path.join(frontendPath, "index.html")));
+  }
 }
 
 // --- 7. ERROR HANDLING ---
 app.use(globalErrorHandler);
 
 export default app;
-
