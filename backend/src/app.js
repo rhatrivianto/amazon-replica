@@ -79,6 +79,13 @@ if (isProduction) {
   if (fs.existsSync(frontendPath)) {
     app.use(express.static(frontendPath));
     app.get("*", (_, res) => res.sendFile(path.join(frontendPath, "index.html")));
+  } else {
+    // FALLBACK: Jika build frontend tidak ditemukan (Mencegah Health Check Error 404)
+    console.warn(`⚠️ Frontend build not found at: ${frontendPath}`);
+    app.get("/", (_, res) => res.status(200).json({ 
+      status: "success", 
+      message: "Backend API is running. Frontend build is missing (Check Build Logs)." 
+    }));
   }
 }
 
