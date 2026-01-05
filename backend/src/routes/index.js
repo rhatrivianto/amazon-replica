@@ -1,7 +1,6 @@
 // backend/routes/index.js
 import express from 'express';
 import authRoutes from './auth.route.js'; // Pastikan path ini benar
-import adminRoute from './admin.route.js';
 import productRoute from './product.route.js';
 import categoryRoute from "./category.route.js";
 import cartRoute from './cart.route.js';
@@ -13,7 +12,6 @@ const router = express.Router();
 
 // Daftarkan rute auth dengan prefix /auth
 router.use('/auth', authRoutes); 
-router.use('/admin', adminRoute);
 router.use('/products', productRoute);
 router.use('/categories', categoryRoute);
 router.use('/cart', cartRoute);
