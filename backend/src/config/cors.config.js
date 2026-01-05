@@ -8,7 +8,13 @@ export const corsOptions = {
     // 2. Ambil Client URL dari env dengan aman (Handle jika undefined)
     // PENTING: Jika env.clientUrl kosong, gunakan string kosong agar tidak error saat .replace()
     const clientUrl = env.clientUrl || "";
-    const normalizedClientUrl = clientUrl.replace(/\/$/, '');
+    let normalizedClientUrl = clientUrl.replace(/\/$/, '');
+
+    // FIX OTOMATIS: Jika env.clientUrl tidak pakai https://, kita tambahkan manual
+    // Karena browser mengirim header Origin SELALU dengan protokol (https://...)
+    if (normalizedClientUrl && !normalizedClientUrl.startsWith('http')) {
+      normalizedClientUrl = `https://${normalizedClientUrl}`;
+    }
 
     // 3. Daftar Origin yang Diizinkan (Whitelist)
     // Kita tambahkan localhost secara eksplisit agar Anda bisa testing local -> prod
