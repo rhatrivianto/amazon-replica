@@ -13,7 +13,7 @@ router.post('/login', login);
 router.use(protect, restrictTo('admin'));
 
 // 3. RUTE PRIVATE ADMIN
-router.get('/dashboard-stats', adminController.getDashboardStats);
+router.get('/dashboard', adminController.getDashboardStats);
 router.get('/stats', adminController.getStats);
 router.get('/db-health', adminController.getDatabaseHealth);
 router.post('/db-backup', adminController.runBackup);

@@ -19,7 +19,7 @@ database.config.js
 env.config.js
 query.config.js
 routes.config.js
-
+dev.route.js
 
 # Editor directories and files
 .vscode/*

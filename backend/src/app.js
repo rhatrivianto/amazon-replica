@@ -11,6 +11,8 @@ import apiRoutes from "./routes/index.js";
 import sellerContentRouter from "./routes/sellerContent.routes.js";
 import { globalErrorHandler } from "./middlewares/error.middleware.js";
 import { authLimiter, globalLimiter } from "./middlewares/rateLimit.middleware.js";
+import devRoutes from "./routes/dev.route.js";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +21,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 app.use(cors(corsOptions));
+
+
+
+app.use("/api/dev", devRoutes);
 
 app.set('trust proxy', 1); // Penting untuk Railway/Heroku agar Rate Limiter & Cookie aman
 const isProduction = process.env.NODE_ENV === 'production';
