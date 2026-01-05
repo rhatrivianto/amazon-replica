@@ -5,9 +5,10 @@ export const corsOptions = {
     // 1. Izinkan request tanpa origin (seperti Postman, Mobile Apps, atau Server-to-Server)
     if (!origin) return callback(null, true);
 
-    // 2. Normalisasi URL Client (Hapus trailing slash '/' jika ada di env)
-    // Contoh: 'https://myapp.com/' menjadi 'https://myapp.com'
-    const normalizedClientUrl = env.clientUrl.replace(/\/$/, '');
+    // 2. Ambil Client URL dari env dengan aman (Handle jika undefined)
+    // PENTING: Jika env.clientUrl kosong, gunakan string kosong agar tidak error saat .replace()
+    const clientUrl = env.clientUrl || "";
+    const normalizedClientUrl = clientUrl.replace(/\/$/, '');
 
     // 3. Daftar Origin yang Diizinkan (Whitelist)
     // Kita tambahkan localhost secara eksplisit agar Anda bisa testing local -> prod
@@ -21,8 +22,9 @@ export const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      // LOGGING PENTING: Cek tab "Logs" di Railway jika error muncul lagi
-      console.error(`🚫 [CORS BLOCKED] Origin: '${origin}' tidak ada di whitelist.`);
+      // LOGGING DETAIL: Cek tab "Logs" di Railway untuk melihat nilai asli yang diterima server
+      console.error(`🚫 [CORS ERROR] Origin '${origin}' ditolak.`);
+      console.error(`ℹ️ [DEBUG] CLIENT_URL di Server terbaca: '${clientUrl}'`);
       console.error(`✅ [ALLOWED LIST] ${JSON.stringify(allowedOrigins)}`);
       callback(new Error('Not allowed by CORS'));
     }
