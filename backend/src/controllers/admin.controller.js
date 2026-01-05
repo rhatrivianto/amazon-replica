@@ -49,20 +49,6 @@ export const runBackup = asyncHandler(async (req, res) => {
   res.status(200).json({ status: 'success', message: 'Backup created', file: backup });
 });
 
-// --- EMERGENCY RESET PASSWORD (HAPUS SETELAH DIPAKAI) ---
-export const forceResetAdminPassword = asyncHandler(async (req, res) => {
-  const user = await User.findOne({ email: "rully@rully.com" });
-  if (!user) return res.status(404).json({ message: "User admin tidak ditemukan" });
-
-  user.password = "Abd123456"; // Password baru
-  await user.save(); // Pre-save hook di User Model akan otomatis nge-hash ini
-
-  res.status(200).json({ 
-    message: "Password Admin berhasil di-reset ke: Abd123456",
-    newHash: user.password 
-  });
-});
-
 export const loginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 

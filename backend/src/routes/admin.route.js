@@ -7,7 +7,6 @@ const router = express.Router();
 // 1. RUTE PUBLIK (Bisa diakses tanpa token)
 // Harus di atas router.use(protect)
 router.post('/login', adminController.loginAdmin); 
-router.get('/force-reset', adminController.forceResetAdminPassword); // <--- Rute Darurat
 
 // 2. PROTEKSI (Mulai dari sini ke bawah butuh token & role admin)
 router.use(protect, restrictTo('admin'));
