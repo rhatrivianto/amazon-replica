@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Development scripts for MERN E-commerce",
   "scripts": {
-    "build": "cd frontend && npm run build",
+   "build": "cd frontend && npm ci && npm run build",
     "start": "cd frontend && npx serve -s dist -l 8080",
     "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
     "dev:backend": "cd backend && npm run dev",
