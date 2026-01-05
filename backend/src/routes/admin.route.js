@@ -1,13 +1,12 @@
 import express from 'express';
 import * as adminController from '../controllers/admin.controller.js';
-import { login } from '../controllers/auth.controller.js'; // Import fungsi login
 import { protect, restrictTo } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
 // 1. RUTE PUBLIK (Bisa diakses tanpa token)
 // Harus di atas router.use(protect)
-router.post('/login', login); 
+router.post('/login', adminController.loginAdmin); 
 
 // 2. PROTEKSI (Mulai dari sini ke bawah butuh token & role admin)
 router.use(protect, restrictTo('admin'));

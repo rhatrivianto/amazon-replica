@@ -4,6 +4,10 @@ import * as userService from '../services/user.service.js';
 import * as productService from '../services/product.service.js';
 import * as orderService from '../services/order.service.js';
 import databaseOrchestrator from '../scripts/databaseOrchestrator.js';
+import User from '../models/user.model.js';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { env } from '../config/env.js';
 
 // 1. Dashboard Summary (Statistik Skala Amazon)
 export const getDashboardStats = asyncHandler(async (req, res) => {
@@ -51,7 +55,8 @@ export const loginAdmin = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Email dan password wajib diisi' });
   }
 
-  const user = await User.findOne({ email });
+  // PENTING: Tambahkan .select('+password') agar password hash terambil dari DB
+  const user = await User.findOne({ email }).select('+password');
 
   if (!user || user.role !== 'admin') {
     return res.status(401).json({ message: 'Admin tidak ditemukan' });
