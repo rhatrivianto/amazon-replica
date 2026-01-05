@@ -80,7 +80,8 @@ app.get("/", (req, res) => {
 
 // --- 6. SERVING FRONTEND IN PRODUCTION ---
 if (isProduction) {
-  const frontendPath = path.join(__dirname, "../frontend/dist");
+  // Gunakan ../../ karena app.js ada di dalam backend/src/ (naik 2 level ke root, lalu masuk frontend)
+  const frontendPath = path.join(__dirname, "../../frontend/dist");
   // Cek apakah folder ada sebelum serve (Agar aman di Railway, tapi tetap jalan di Local jika ada build)
   if (fs.existsSync(frontendPath)) {
     app.use(express.static(frontendPath));
