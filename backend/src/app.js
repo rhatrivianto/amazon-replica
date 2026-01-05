@@ -71,11 +71,6 @@ app.use("/api/v1", apiRoutes);
 
 app.use('/api/v1/seller-contents', sellerContentRouter);
 
-// Root Route
-app.get("/", (req, res) => {
-  res.json({ status: "success", message: "Amazon Clone API v1.0.0 Active" });
-});
-
 // --- 6. SERVING FRONTEND IN PRODUCTION ---
 if (isProduction) {
   // Gunakan ../../ karena app.js ada di dalam backend/src/ (naik 2 level ke root, lalu masuk frontend)
