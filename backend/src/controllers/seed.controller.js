@@ -2,11 +2,10 @@ import slugify from 'slugify';
 import Product from '../models/product.model.js';
 import Category from '../models/category.model.js';
 import Brand from '../models/brand.model.js';
-import asyncHandler from '../utils/asyncHandler.js'; // Pastikan utils ini ada, atau gunakan try-catch biasa
+import { asyncHandler } from '../utils/asyncHandler.js'; // Pastikan utils ini ada, atau gunakan try-catch biasa
 import { productsToSeed } from '../data/seedData.js';
 
-export const seedProducts = async (req, res) => {
-  try {
+export const seedProducts = asyncHandler(async (req, res) => {
     console.log('🌱 Starting Seeding Process from Server...');
     const results = [];
 
@@ -82,13 +81,4 @@ export const seedProducts = async (req, res) => {
       message: `Successfully seeded ${results.length} products!`,
       products: results
     });
-
-  } catch (error) {
-    console.error('❌ Seeding Failed:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Seeding failed',
-      error: error.message
-    });
-  }
-};
+});
