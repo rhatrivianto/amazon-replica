@@ -1,9 +1,12 @@
 import mongoose from 'mongoose';
-const pageSectionSchema = new mongoose.Schema({
-  title: String,
-  type: { type: String, enum: ['banner', 'carousel', 'grid'], index: true },
-  content: Array,
-  order: { type: Number, index: true },
-  isActive: { type: Boolean, default: true }
+
+const notificationSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  type: { type: String, enum: ['order', 'system', 'promo'], default: 'system' },
+  isRead: { type: Boolean, default: false },
+  link: String
 }, { timestamps: true });
-export default mongoose.model('PageSection', pageSectionSchema);
+
+export default mongoose.model('Notification', notificationSchema);

@@ -12,6 +12,7 @@ import sellerContentRouter from "./routes/sellerContent.routes.js";
 import { globalErrorHandler } from "./middlewares/error.middleware.js";
 import { authLimiter, globalLimiter } from "./middlewares/rateLimit.middleware.js";
 import adminRoutes from "./routes/admin.route.js";
+import seedRoutes from "./routes/seed.route.js";
 
 
 
@@ -68,6 +69,7 @@ app.use("/api", globalLimiter);
 // Semua rute (auth, products, orders) masuk lewat sini
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1", apiRoutes); 
+app.use("/api/v1/seed", seedRoutes); // Route khusus seeding
 
 app.use('/api/v1/seller-contents', sellerContentRouter);
 

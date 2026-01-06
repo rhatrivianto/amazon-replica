@@ -1,15 +1,22 @@
 import mongoose from 'mongoose';
+import slugify from 'slugify';
 
-const categorySchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  parent: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: null },
-  children: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }] 
+const brandSchema = new mongoose.Schema({
+  name: { type: String, required: true, unique: true, trim: true },
+  slug: { type: String, unique: true, lowercase: true },
+  logo: String,
+  description: String,
+  isActive: { type: Boolean, default: true }
 }, { 
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  timestamps: true
 });
 
-// Gunakan pengecekan models untuk menghindari OverwriteModelError
-const Category = mongoose.models.Category || mongoose.model('Category', categorySchema);
-export default Category;
+brandSchema.pre('save', function(next) {
+  if (this.isModified('name')) {
+    this.slug = slugify(this.name, { lower: true, strict: true });
+  }
+  next();
+});
+
+const Brand = mongoose.models.Brand || mongoose.model('Brand', brandSchema);
+export default Brand;

@@ -26,8 +26,8 @@ const productSchema = new mongoose.Schema({
   // --- SPESIFIKASI TEKNIS (Dynamic Grid) ---
   // Memungkinkan filter dinamis seperti "Voltage" atau "Battery Capacity"
   specifications: [{
-    key: { type: String, required: true },   // Contoh: "Color", "Material"
-    value: { type: String, required: true }  // Contoh: "Black", "Carbon Steel"
+    key: { type: String },   // Contoh: "Color", "Material"
+    value: { type: String }  // Contoh: "Black", "Carbon Steel"
   }],
 
   // --- LOGISTIK & PENGIRIMAN ---
