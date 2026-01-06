@@ -47,7 +47,7 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "https://checkout.stripe.com"],
-      imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://*.stripe.com"],
+      imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://*.stripe.com", "https://images.unsplash.com"],
       connectSrc: ["'self'", "https://api.stripe.com"],
     },
   } : false
