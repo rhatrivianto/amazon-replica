@@ -82,3 +82,18 @@ export const seedProducts = asyncHandler(async (req, res) => {
       products: results
     });
 });
+
+/**
+ * @desc    MENGHAPUS SEMUA DATA PRODUK (Hati-hati!)
+ * @route   DELETE /api/v1/seed/reset
+ */
+export const resetDatabase = asyncHandler(async (req, res) => {
+  await Product.deleteMany({});
+  await Category.deleteMany({});
+  await Brand.deleteMany({});
+
+  res.status(200).json({
+    success: true,
+    message: '⚠️ Database Reset Successful! All Products, Categories, and Brands have been deleted.'
+  });
+});
