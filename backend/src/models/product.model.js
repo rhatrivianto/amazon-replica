@@ -34,8 +34,8 @@ const productSchema = new mongoose.Schema({
   shippingInfo: {
     weight: { type: String },     // Contoh: "1.2 lbs"
     dimensions: { type: String }, // Contoh: "10 x 5 x 2 inches"
-    shipsFrom: { type: String, default: "Amazon" }, //
-    soldBy: { type: String, required: true }        //
+    shipsFrom: { type: String, default: "Amazon" },
+    soldBy: { type: String, default: "Amazon Official" } // Ubah required jadi default agar aman saat input manual
   },
 
   // --- STATUS & BADGES ---
