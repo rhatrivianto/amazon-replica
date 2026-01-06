@@ -218,3 +218,4 @@ export const productsToSeed = [
     modelNumber: "501-0000"
   }
 ];
+
