@@ -17,6 +17,9 @@ import Shipping from './shipping.model.js';
 import InventoryLog from './inventoryLog.model.js';
 import AuditLog from './auditLog.model.js';
 import EmailLog from './emailLog.model.js';
+import Address from './address.model.js';
+import SellerContent from './sellerContent.model.js';
+
 
 // Export as a single Hub
 export {
@@ -37,5 +40,8 @@ export {
   Shipping,
   InventoryLog,
   AuditLog,
-  EmailLog
+  EmailLog,
+  SellerContent,
+  Address
+
 };

@@ -97,7 +97,7 @@ class DatabaseHealthCheck {
   }
 
   async checkIndexHealth() {
-    const collections = ["products", "users", "orders"];
+    const collections = ["products", "users", "orders", "reviews", "carts", "coupons", "vouchers", "notifications", "chats", "pageSections", "payments", "shippings", "inventoryLogs", "auditLogs", "emailLogs", "addresses", "sellerContents","wishlist", "brands", "categories"];
     const results = [];
 
     for (const name of collections) {
