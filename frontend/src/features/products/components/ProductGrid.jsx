@@ -12,6 +12,7 @@ import Pagination from '../../../shared/ui/Pagination.jsx';
 const ProductGrid = ({ onOpenAuth, categoryId, searchQuery }) => {
   const userInfo = useSelector(selectUserInfo);
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState(''); // State untuk sorting
 
   // Reset ke halaman 1 jika kategori berubah
   useEffect(() => {
@@ -23,6 +24,7 @@ const ProductGrid = ({ onOpenAuth, categoryId, searchQuery }) => {
   const queryParams = {
     page,
     limit,
+    sortBy, // Kirim parameter sort ke Backend
   };
   
   // Hanya tambahkan category jika ada nilainya (bukan null/undefined)
@@ -78,10 +80,28 @@ const ProductGrid = ({ onOpenAuth, categoryId, searchQuery }) => {
 
   return (
     <div className="space-y-8 p-4">
-      {/* Header Info: Showing 1-12 of 50 results */}
+      {/* Header Info & Sorting */}
       {!isLoading && !error && totalItems > 0 && (
-        <div className="text-sm text-gray-600 shadow-sm bg-white p-3 rounded border border-gray-100">
-          Showing <span className="font-bold text-black">{startItem}-{endItem}</span> of <span className="font-bold text-black">{totalItems}</span> results
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-sm text-gray-600 shadow-sm bg-white p-3 rounded border border-gray-100">
+          <div>
+            Showing <span className="font-bold text-black">{startItem}-{endItem}</span> of <span className="font-bold text-black">{totalItems}</span> results
+          </div>
+          
+          {/* Dropdown Sortir ala Amazon */}
+          <div className="flex items-center gap-2">
+            <label htmlFor="sort" className="hidden sm:inline">Sort by:</label>
+            <select 
+              id="sort"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-[#F0F2F2] hover:bg-[#E3E6E6] border border-[#D5D9D9] rounded-md py-1 px-2 text-xs sm:text-sm shadow-sm focus:ring-1 focus:ring-[#e47911] outline-none cursor-pointer"
+            >
+              <option value="">Featured</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="newest">Newest Arrivals</option>
+            </select>
+          </div>
         </div>
       )}
 

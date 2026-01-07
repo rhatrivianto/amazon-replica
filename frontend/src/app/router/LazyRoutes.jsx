@@ -21,6 +21,8 @@ export const PaymentSuccessPage = lazy(() => import('../../features/checkout/pag
 export const PaymentCancelPage = lazy(() => import('../../features/checkout/pages/PaymentCancelPage'));
 export const OrderPage = lazy(() => import('../../features/orders/pages/OrderPage'));
 export const EmailVerificationPage = lazy(() => import('../../features/auth/pages/EmailVerificationPage'));
+export const UserOrdersPage = lazy(() => import('../../features/orders/pages/UserOrdersPage'));
+export const UserAddressPage = lazy(() => import('../../features/address/pages/UserAddressPage'));
 
 // --- SELL PAGES ---
 export const SellLayout = lazy(() => import('../../features/sells/components/SellLayout'));

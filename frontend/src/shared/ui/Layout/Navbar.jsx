@@ -46,6 +46,18 @@ const Navbar = ({ onOpenAuth }) => { // 1. Terima props onOpenAuth dari AppRoute
             
             {userInfo && (
               <div className="absolute top-full right-0 mt-0 w-40 bg-white text-black hidden group-hover:block shadow-xl p-4 z-[110] border">
+                <div className="flex flex-col gap-2 mb-3 border-b pb-2">
+                  <Link to="/account/orders" className="text-sm hover:text-orange-600 hover:underline">
+                    Your Orders
+                  </Link>
+                  <Link to="/account/addresses" className="text-sm hover:text-orange-600 hover:underline">
+                    Your Addresses
+                  </Link>
+                  <Link to="/account" className="text-sm hover:text-orange-600 hover:underline">
+                    Your Account
+                  </Link>
+                </div>
+
                 <button 
                   onClick={() => {
                     dispatch(logout());

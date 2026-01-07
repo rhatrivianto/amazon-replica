@@ -13,6 +13,7 @@ import { globalErrorHandler } from "./middlewares/error.middleware.js";
 import { authLimiter, globalLimiter } from "./middlewares/rateLimit.middleware.js";
 import adminRoutes from "./routes/admin.route.js";
 import seedRoutes from "./routes/seed.route.js";
+import addressRoutes from "./routes/address.route.js";
 
 
 
@@ -70,6 +71,7 @@ app.use("/api", globalLimiter);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1", apiRoutes); 
 app.use("/api/v1/seed", seedRoutes); // Route khusus seeding
+app.use("/api/v1/addresses", addressRoutes); // Route alamat user
 
 app.use('/api/v1/seller-contents', sellerContentRouter);
 
