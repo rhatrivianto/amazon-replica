@@ -18,13 +18,18 @@ const ProductGrid = ({ onOpenAuth, categoryId, searchQuery }) => {
     setPage(1);
   }, [categoryId]);
   
-  // 1. Fetch data dengan parameter page & limit
-  const { data: response, isLoading, error, isFetching } = useGetProductsQuery({ 
-    category: categoryId,
-    q: searchQuery, // Kirim kata kunci pencarian ke API
-    page: page,
-    limit: 12 
-  });
+  // 1. Persiapkan parameter query yang bersih (hapus null/undefined)
+  const queryParams = {
+    page,
+    limit: 12,
+  };
+  
+  // Hanya tambahkan category jika ada nilainya (bukan null/undefined)
+  if (categoryId) queryParams.category = categoryId;
+  // Hanya tambahkan search query jika ada
+  if (searchQuery) queryParams.q = searchQuery;
+
+  const { data: response, isLoading, error, isFetching } = useGetProductsQuery(queryParams);
   
   // 2. Persiapkan fungsi Add to Cart dari API
   const [addToCart] = useAddToCartMutation();
@@ -55,7 +60,12 @@ const ProductGrid = ({ onOpenAuth, categoryId, searchQuery }) => {
     </div>
   );
 
-  if (error) return <div className="p-10 text-center text-red-500">Gagal mengambil data produk</div>;
+  if (error) return (
+    <div className="p-10 text-center text-red-500 bg-red-50 rounded-lg border border-red-100">
+      <p className="font-bold">Gagal mengambil data produk</p>
+      <p className="text-sm mt-1">{error?.data?.message || error?.error || 'Terjadi kesalahan jaringan'}</p>
+    </div>
+  );
 
   const products = response?.data || [];
   const pagination = response?.pagination || {};
