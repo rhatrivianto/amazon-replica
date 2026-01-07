@@ -30,4 +30,9 @@ export const orderApi = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useGetMyOrdersQuery, useCreateOrderMutation, useGetOrderByIdQuery, useCreateCheckoutSessionMutation } = orderApi;
+export const { 
+  useGetMyOrdersQuery, 
+  useCreateOrderMutation, 
+  useGetOrderByIdQuery, 
+  useCreateCheckoutSessionMutation 
+} = orderApi;
