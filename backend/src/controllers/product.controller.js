@@ -9,7 +9,7 @@ import Category from '../models/category.model.js';
  * @desc    Ambil semua produk dengan filter (Pencarian, Kategori, Harga, Urutan)
  */
 export const getProducts = asyncHandler(async (req, res) => {
-  const { q, category, sortBy, minPrice, maxPrice, page = 1, limit = 10 } = req.query;
+  const { q, category, sortBy, minPrice, maxPrice, page = 1, limit = 12 } = req.query;
 
   const result = await productService.getAllProducts({
     search: q,
