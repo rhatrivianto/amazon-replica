@@ -9,7 +9,7 @@ import { useAddToCartMutation } from '../../../services/cartApi.js';
 import ProductCard from './ProductCard.jsx';
 import Pagination from '../../../shared/ui/Pagination.jsx';
 
-const ProductGrid = ({ onOpenAuth, categoryId }) => {
+const ProductGrid = ({ onOpenAuth, categoryId, searchQuery }) => {
   const userInfo = useSelector(selectUserInfo);
   const [page, setPage] = useState(1);
 
@@ -21,6 +21,7 @@ const ProductGrid = ({ onOpenAuth, categoryId }) => {
   // 1. Fetch data dengan parameter page & limit
   const { data: response, isLoading, error, isFetching } = useGetProductsQuery({ 
     category: categoryId,
+    q: searchQuery, // Kirim kata kunci pencarian ke API
     page: page,
     limit: 12 
   });

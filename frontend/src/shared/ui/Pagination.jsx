@@ -10,7 +10,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="flex items-center gap-1 px-4 py-2 rounded-full border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#e47911] hover:border-[#e47911] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+        className="flex items-center gap-1 px-4 py-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#e47911] hover:border-[#e47911] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
       >
         <ChevronLeft size={16} /> Previous
       </button>
@@ -24,7 +24,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="flex items-center gap-1 px-4 py-2 rounded-full border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#e47911] hover:border-[#e47911] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+        className="flex items-center gap-1 px-4 py-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#e47911] hover:border-[#e47911] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
       >
         Next <ChevronRight size={16} />
       </button>
