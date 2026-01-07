@@ -19,7 +19,15 @@ export const orderApi = apiSlice.injectEndpoints({
       query: (id) => `/orders/${id}`,
       providesTags: (result, error, id) => [{ type: 'Order', id }],
     }),
+    // Pindahkan createCheckoutSession ke sini agar sesuai dengan import di CheckoutPage
+    createCheckoutSession: builder.mutation({
+      query: (items) => ({
+        url: '/orders/checkout',
+        method: 'POST',
+        body: { items },
+      }),
+    }),
   }),
 });
 
-export const { useGetMyOrdersQuery, useCreateOrderMutation, useGetOrderByIdQuery } = orderApi;
+export const { useGetMyOrdersQuery, useCreateOrderMutation, useGetOrderByIdQuery, useCreateCheckoutSessionMutation } = orderApi;
