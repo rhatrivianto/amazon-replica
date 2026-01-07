@@ -2,6 +2,7 @@ import cloudinary  from '../config/cloudinary.js'; // Pastikan config sudah bena
 import streamifier from 'streamifier'; // Library kecil untuk stream buffer ke cloud
 import * as productService from '../services/product.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import Category from '../models/category.model.js';
 
 
 /**
@@ -37,7 +38,29 @@ export const getProducts = asyncHandler(async (req, res) => {
  */
 export const getProductById = asyncHandler(async (req, res) => {
   const product = await productService.getProductById(req.params.id);
-  res.status(200).json({ status: 'success', data: product });
+
+  // --- GENERATE BREADCRUMB (Silsilah Kategori) ---
+  let breadcrumbs = [];
+  if (product && product.category) {
+    // Cek apakah category berupa Object (populated) atau ID string
+    let currentId = product.category._id || product.category;
+    
+    let currentCat = await Category.findById(currentId);
+    while (currentCat) {
+      breadcrumbs.unshift({ 
+        name: currentCat.name, 
+        slug: currentCat.slug,
+        _id: currentCat._id 
+      });
+      currentCat = currentCat.parent ? await Category.findById(currentCat.parent) : null;
+    }
+  }
+
+  // Konversi ke object biasa agar bisa menambah field 'breadcrumbs'
+  const productData = product && product.toObject ? product.toObject() : product;
+  if (productData) productData.breadcrumbs = breadcrumbs;
+
+  res.status(200).json({ status: 'success', data: productData });
 });
 
 /**

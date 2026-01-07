@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
+import { useParams, useOutletContext, useNavigate, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUserInfo } from '../../../features/auth/authSlice.js';
 import { Info, MessageSquare, ThumbsUp, Loader2, ArrowLeft } from 'lucide-react';
@@ -55,6 +55,23 @@ const ProductDetailPage = () => {
           >
             <ArrowLeft size={18} /> Back
           </button>
+
+          {/* --- KOMPONEN BREADCRUMB --- */}
+          <nav className="flex items-center text-sm text-gray-500 mb-4">
+            {product?.breadcrumbs && product.breadcrumbs.map((cat, index) => (
+              <span key={cat._id} className="flex items-center">
+                {/* Tampilkan separator '>' kecuali untuk item pertama */}
+                {index > 0 && <span className="mx-2 text-gray-400">›</span>}
+                
+                <Link 
+                  to={`/?category=${cat._id}`} 
+                  className="hover:text-yellow-600 hover:underline transition-colors"
+                >
+                  {cat.name}
+                </Link>
+              </span>
+            ))}
+          </nav>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           
