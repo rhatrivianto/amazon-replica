@@ -18,10 +18,11 @@ const ProductGrid = ({ onOpenAuth, categoryId, searchQuery }) => {
     setPage(1);
   }, [categoryId]);
   
+  const limit = 12; // Kita simpan limit dalam variabel agar bisa dipakai untuk hitungan
   // 1. Persiapkan parameter query yang bersih (hapus null/undefined)
   const queryParams = {
     page,
-    limit: 12,
+    limit,
   };
   
   // Hanya tambahkan category jika ada nilainya (bukan null/undefined)
@@ -70,8 +71,20 @@ const ProductGrid = ({ onOpenAuth, categoryId, searchQuery }) => {
   const products = response?.data || [];
   const pagination = response?.pagination || {};
 
+  // Hitung range produk (Start - End)
+  const totalItems = pagination.total || 0;
+  const startItem = (page - 1) * limit + 1;
+  const endItem = Math.min(page * limit, totalItems);
+
   return (
     <div className="space-y-8 p-4">
+      {/* Header Info: Showing 1-12 of 50 results */}
+      {!isLoading && !error && totalItems > 0 && (
+        <div className="text-sm text-gray-600 shadow-sm bg-white p-3 rounded border border-gray-100">
+          Showing <span className="font-bold text-black">{startItem}-{endItem}</span> of <span className="font-bold text-black">{totalItems}</span> results
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {products.map((product) => (
           <ProductCard 
