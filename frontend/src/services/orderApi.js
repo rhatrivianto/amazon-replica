@@ -2,23 +2,24 @@ import { apiSlice } from './apiSlice.js';
 
 export const orderApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Membuat sesi pembayaran Stripe
-    createCheckoutSession: builder.mutation({
-      query: (items) => ({
-        url: '/orders/checkout',
-        method: 'POST',
-        body: { items },
-      }),
-    }),
-    // Mengambil riwayat pesanan (opsional untuk nanti)
+    // Mengambil riwayat pesanan user yang sedang login
     getMyOrders: builder.query({
-      query: () => '/orders/myorders',
+      query: () => '/orders/my-orders', // Koreksi: Tambahkan hyphen agar sesuai route backend
       providesTags: ['Order'],
+    }),
+    createOrder: builder.mutation({
+      query: (order) => ({
+        url: '/orders',
+        method: 'POST',
+        body: order,
+      }),
+      invalidatesTags: ['Order', 'Cart'],
+    }),
+    getOrderById: builder.query({
+      query: (id) => `/orders/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Order', id }],
     }),
   }),
 });
 
-export const { 
-  useCreateCheckoutSessionMutation,
-  useGetMyOrdersQuery 
-} = orderApi;
+export const { useGetMyOrdersQuery, useCreateOrderMutation, useGetOrderByIdQuery } = orderApi;

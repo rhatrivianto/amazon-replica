@@ -97,9 +97,9 @@ const ProductGrid = ({ onOpenAuth, categoryId, searchQuery }) => {
               className="bg-[#F0F2F2] hover:bg-[#E3E6E6] border border-[#D5D9D9] rounded-md py-1 px-2 text-xs sm:text-sm shadow-sm focus:ring-1 focus:ring-[#e47911] outline-none cursor-pointer"
             >
               <option value="">Featured</option>
-              <option value="price_asc">Price: Low to High</option>
-              <option value="price_desc">Price: High to Low</option>
-              <option value="newest">Newest Arrivals</option>
+              <option value="price">Price: Low to High</option>
+              <option value="-price">Price: High to Low</option>
+              <option value="-createdAt">Newest Arrivals</option>
             </select>
           </div>
         </div>

@@ -9,6 +9,8 @@ const orderSchema = new mongoose.Schema({
   }],
   totalPrice: { type: Number, required: true },
   shippingAddress: {
+    fullName: String, // Tambahkan ini agar nama penerima tersimpan
+    phone: String,    // Tambahkan ini untuk kontak kurir
     street: String,
     city: String,
     state: String,
