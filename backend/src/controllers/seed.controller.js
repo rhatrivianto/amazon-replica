@@ -97,3 +97,42 @@ export const resetDatabase = asyncHandler(async (req, res) => {
     message: '⚠️ Database Reset Successful! All Products, Categories, and Brands have been deleted.'
   });
 });
+
+/**
+ * @desc    CEK STRUKTUR BREADCRUMB (Untuk Verifikasi)
+ * @route   GET /api/v1/seed/check-breadcrumbs
+ */
+export const checkBreadcrumbs = asyncHandler(async (req, res) => {
+  // 1. Ambil semua produk, populate kategori awalnya
+  const products = await Product.find().select('name category').populate('category');
+  
+  const report = [];
+
+  // 2. Loop setiap produk untuk mencari silsilah kategorinya (Naik ke atas)
+  for (const p of products) {
+    let pathNames = [];
+    let currentCat = p.category;
+
+    // Loop while: Selama masih punya kategori (dan parent), naik terus ke atas
+    while (currentCat) {
+      pathNames.unshift(currentCat.name); // Masukkan nama ke depan array
+      if (currentCat.parent) {
+        currentCat = await Category.findById(currentCat.parent);
+      } else {
+        currentCat = null; // Berhenti jika tidak punya parent (Root Category)
+      }
+    }
+
+    report.push({
+      product: p.name,
+      breadcrumb: pathNames.join(' > '), // Contoh: Electronics > Audio > Headphones
+      depth: pathNames.length
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    totalProducts: report.length,
+    data: report
+  });
+});
