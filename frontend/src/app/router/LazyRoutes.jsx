@@ -31,6 +31,8 @@ export const SellerGuidePage = lazy(() => import('../../features/sells/pages/Sel
 export const SellerPricingPage = lazy(() => import('../../features/sells/pages/SellerPricingPage'));
 export const SellerRegisterPage = lazy(() => import('../../features/sells/pages/SellerRegisterPage'));
 export const SellerLayout = lazy(() => import('../../features/sells/components/SellerLayout'));
+export const SellerDashboardPage = lazy(() => import('../../features/sells/pages/SellerDashboardPage'));
+export const SellerInventoryPage = lazy(() => import('../../features/sells/pages/SellerInventoryPage'));
 
 // --- STATIC PAGES ---
 export const NotFoundPage = lazy(() => import('../../pages/NotFoundPage'));

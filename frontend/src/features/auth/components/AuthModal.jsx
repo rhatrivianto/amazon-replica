@@ -1,19 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setUserCredentials } from '../../../features/auth/authSlice.js';
 import { useLoginMutation, useRegisterMutation } from '../../../services/authApi.js';
 import { toast } from 'react-hot-toast';
-import { X, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
+import { X, Mail, Lock, User, ArrowRight, Loader2, Store } from 'lucide-react';
 
-const AuthModal = ({ isOpen, onClose }) => {
+const AuthModal = ({ isOpen, onClose, initialTab = 'signin', initialIsSeller = false }) => {
   const dispatch = useDispatch();
-  const [activeTab, setActiveTab] = useState('signin');
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [isSellerSignup, setIsSellerSignup] = useState(initialIsSeller);
   const [isWaitingVerify, setIsWaitingVerify] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', storeName: '' });
 
   // Hook dari RTK Query
   const [login, { isLoading: isLoggingIn }] = useLoginMutation();
   const [register, { isLoading: isRegistering }] = useRegisterMutation();
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+      setIsSellerSignup(initialIsSeller);
+    }
+  }, [isOpen, initialTab, initialIsSeller]);
 
   if (!isOpen) return null;
 
@@ -39,7 +47,11 @@ const AuthModal = ({ isOpen, onClose }) => {
         onClose();
       } else {
         // Proses REGISTER
-        await register(formData).unwrap();
+        const registerData = { ...formData };
+        if (isSellerSignup) {
+          registerData.role = 'seller';
+        }
+        await register(registerData).unwrap();
         setIsWaitingVerify(true); 
         toast.success('Email verifikasi dikirim ke Mailtrap');
       }
@@ -65,7 +77,7 @@ const AuthModal = ({ isOpen, onClose }) => {
         <div className="p-8">
           <div className="text-center mb-6">
              <h2 className="text-2xl font-bold text-gray-900">
-               {isWaitingVerify ? 'Check Your Email' : activeTab === 'signin' ? 'Sign-In' : 'Create Account'}
+               {isWaitingVerify ? 'Check Your Email' : activeTab === 'signin' ? 'Sign-In' : (isSellerSignup ? 'Create Seller Account' : 'Create Account')}
              </h2>
           </div>
 
@@ -107,6 +119,20 @@ const AuthModal = ({ isOpen, onClose }) => {
             /* FORM SIGN-IN / SIGN-UP */
             <form onSubmit={handleSubmit} className="space-y-4">
               {activeTab === 'signup' && (
+                <div className="flex items-center justify-center mb-4">
+                  <label className="flex items-center cursor-pointer space-x-2">
+                    <input 
+                      type="checkbox" 
+                      checked={isSellerSignup} 
+                      onChange={(e) => setIsSellerSignup(e.target.checked)}
+                      className="form-checkbox h-4 w-4 text-[#e47911] rounded border-gray-300 focus:ring-[#e47911]"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Register as a Seller</span>
+                  </label>
+                </div>
+              )}
+
+              {activeTab === 'signup' && (
                 <div className="relative">
                   <User className="absolute left-3 top-3 text-gray-400" size={18} />
                   <input
@@ -114,6 +140,20 @@ const AuthModal = ({ isOpen, onClose }) => {
                     type="text"
                     placeholder="Your name"
                     required
+                    className="w-full border border-gray-300 rounded-md py-2 pl-10 pr-4 focus:ring-1 focus:ring-[#e47911] focus:border-[#e47911] outline-none transition-all"
+                    onChange={handleChange}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'signup' && isSellerSignup && (
+                <div className="relative animate-in fade-in slide-in-from-top-2 duration-200">
+                  <Store className="absolute left-3 top-3 text-gray-400" size={18} />
+                  <input
+                    name="storeName"
+                    type="text"
+                    placeholder="Store Name"
+                    required={isSellerSignup}
                     className="w-full border border-gray-300 rounded-md py-2 pl-10 pr-4 focus:ring-1 focus:ring-[#e47911] focus:border-[#e47911] outline-none transition-all"
                     onChange={handleChange}
                   />

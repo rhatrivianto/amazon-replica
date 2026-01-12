@@ -20,8 +20,14 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'admin', 'seller'],
     default: 'user',
+  },
+  storeName: {
+    type: String,
+    unique: true,
+    sparse: true, // Allows multiple users to have null/undefined storeName
+    trim: true
   },
   // --- FIELD UNTUK VERIFIKASI EMAIL ---
   isVerified: {

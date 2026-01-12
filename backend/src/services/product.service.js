@@ -7,7 +7,7 @@ import { nanoid } from 'nanoid'; // Opsional: untuk generate ASIN jika tidak dii
 
 // 1. Ambil Semua Produk (Logic Search & Filter Amazon)
 export const getAllProducts = async (filters) => {
-  const { search, category, sort, minPrice, maxPrice, page, limit } = filters;
+  const { search, category, sort, minPrice, maxPrice, page, limit, seller } = filters;
   let queryObj = {};
 
   // Amazon Search Style: Menggunakan text search jika ada, atau regex
@@ -16,6 +16,9 @@ export const getAllProducts = async (filters) => {
   }
 
   if (category && category !== 'all') queryObj.category = category;
+  
+  // Filter by Seller (Untuk Inventory Dashboard)
+  if (seller) queryObj.seller = seller;
 
   if (!isNaN(minPrice) || !isNaN(maxPrice)) {
     queryObj.price = {};

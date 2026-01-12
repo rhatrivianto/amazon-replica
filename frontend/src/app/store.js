@@ -5,6 +5,7 @@ import adminAuthReducer from '../features/admin/auth/adminAuthSlice.js'; // Redu
 import userAuthReducer from '../features/auth/authSlice.js'; // Asumsi ada reducer User
 
 
+
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -14,5 +15,5 @@ export const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),
-  devTools: true,
+    devTools: import.meta.env.NODE !== 'production',
 });

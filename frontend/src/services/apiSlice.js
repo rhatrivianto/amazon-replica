@@ -13,20 +13,15 @@ console.log("🔧 Environment Mode:", import.meta.env.MODE);
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: baseUrl,
+    baseUrl: baseUrl || 'http://localhost:5000/api/v1',
     prepareHeaders: (headers, { getState }) => {
-      const state = getState();
+      // 1. Ambil token dari Redux State
+      // Gunakan optional chaining (?.) untuk keamanan jika state auth belum terinisialisasi
+      const token = getState()?.auth?.token;
       
-      // Ambil kedua token
-      const Token = state.adminAuth?.token;
-      const userToken = state.auth?.token;
-
-      // Prioritaskan adminToken jika sedang di area admin, atau kirim yang tersedia
-      if (Token) {
-        headers.set('authorization', `Bearer ${Token}`);
-      } else if (userToken) {
-        headers.set('authorization', `Bearer ${userToken}`);
-      }
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      } 
       
       return headers;
     },

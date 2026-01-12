@@ -27,6 +27,15 @@ export const authApi = apiSlice.injectEndpoints({
         method: 'GET', // Meskipun method GET, di RTK Query mutation sering digunakan untuk aksi sekali jalan
       }),
     }),
+
+    // Mutation untuk Upgrade ke Seller
+    registerSeller: builder.mutation({
+      query: (data) => ({
+        url: '/auth/register-seller',
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -34,5 +43,6 @@ export const authApi = apiSlice.injectEndpoints({
 export const { 
   useLoginMutation, 
   useRegisterMutation, 
-  useVerifyEmailMutation 
+  useVerifyEmailMutation,
+  useRegisterSellerMutation
 } = authApi;

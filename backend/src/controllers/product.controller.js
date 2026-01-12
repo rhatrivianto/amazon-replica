@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import cloudinary  from '../config/cloudinary.js'; // Pastikan config sudah benar
 import streamifier from 'streamifier'; // Library kecil untuk stream buffer ke cloud
 import * as productService from '../services/product.service.js';
@@ -5,11 +6,46 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import Category from '../models/category.model.js';
 
 
+// --- HELPER: Get Category ID + All Descendant IDs ---
+const getCategoryWithDescendants = async (identifier) => {
+  // 1. Find the root category (by ID, Slug, or Name)
+  const query = mongoose.isValidObjectId(identifier) 
+    ? { _id: identifier } 
+    : { $or: [{ slug: identifier }, { name: identifier }] };
+
+  const rootCategory = await Category.findOne(query);
+  if (!rootCategory) return null;
+
+  // 2. Recursive function to find all children
+  const getChildrenIds = async (parentId) => {
+    const children = await Category.find({ parent: parentId });
+    let ids = children.map(c => c._id);
+    
+    for (const child of children) {
+      const grandChildrenIds = await getChildrenIds(child._id);
+      ids = [...ids, ...grandChildrenIds];
+    }
+    return ids;
+  };
+
+  const allIds = await getChildrenIds(rootCategory._id);
+  return [rootCategory._id, ...allIds]; // Return Root + Children
+};
+
 /**
  * @desc    Ambil semua produk dengan filter (Pencarian, Kategori, Harga, Urutan)
  */
 export const getProducts = asyncHandler(async (req, res) => {
-  const { q, category, sortBy, minPrice, maxPrice, page = 1, limit = 12 } = req.query;
+  let { q, category, sortBy, minPrice, maxPrice, page = 1, limit = 12, seller } = req.query;
+
+  // FIX: If category is selected, include all its sub-categories in the query
+  if (category) {
+    const categoryIds = await getCategoryWithDescendants(category);
+    if (categoryIds) {
+      // MongoDB query: Find products where category is IN this list of IDs
+      category = { $in: categoryIds };
+    }
+  }
 
   const result = await productService.getAllProducts({
     search: q,
@@ -18,7 +54,8 @@ export const getProducts = asyncHandler(async (req, res) => {
     minPrice: Number(minPrice),
     maxPrice: Number(maxPrice),
     page: Number(page),
-    limit: Number(limit)
+    limit: Number(limit),
+    seller // Tambahkan filter seller
   });
 
   res.status(200).json({ 
@@ -105,6 +142,16 @@ export const createProduct = asyncHandler(async (req, res) => {
   });
 
   req.body.images = await Promise.all(uploadPromises);
+
+  // --- AMAZON STYLE: Link Product to Seller ---
+  // Otomatis set seller ID dari user yang login
+  req.body.seller = req.user._id;
+
+  // Otomatis set "Sold By" dengan nama toko seller
+  if (req.user.storeName) {
+    req.body.shippingInfo = req.body.shippingInfo || {};
+    req.body.shippingInfo.soldBy = req.user.storeName;
+  }
 
   // 3. Save to DB
   const product = await productService.createProduct(req.body);

@@ -16,12 +16,22 @@ const signToken = (id) => {
 // --- REGISTER ---
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role, storeName } = req.body;
 
     // 1. Cek jika email sudah ada
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ success: false, message: 'Email sudah terdaftar.' });
+    }
+
+    // 2. Validasi Khusus Seller
+    if (role === 'seller') {
+      if (!storeName) return res.status(400).json({ success: false, message: 'Store Name wajib diisi untuk seller.' });
+      
+      const storeExists = await User.findOne({ storeName });
+      if (storeExists) {
+        return res.status(400).json({ success: false, message: 'Nama Toko sudah digunakan. Pilih nama lain.' });
+      }
     }
 
     // 2. Buat token verifikasi
@@ -32,6 +42,8 @@ export const register = async (req, res) => {
       name,
       email,
       password,
+      role: role === 'seller' ? 'seller' : 'user',
+      storeName: role === 'seller' ? storeName : undefined,
       verificationToken,
       isVerified: false
     });
@@ -138,7 +150,55 @@ const token = signToken(user._id);
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        storeName: user.storeName // Tambahkan ini agar muncul di Dashboard
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// --- REGISTER SELLER (UPGRADE ACCOUNT) ---
+export const registerSeller = async (req, res) => {
+  try {
+    const { storeName } = req.body;
+    const userId = req.user._id; // Didapat dari middleware protect
+
+    // 0. Cek apakah user sudah menjadi seller
+    const currentUser = await User.findById(userId);
+    // FIX: Hanya tolak jika dia seller DAN sudah punya nama toko.
+    // Jika dia seller tapi storeName kosong (kasus Ustman), biarkan dia lanjut untuk set nama toko.
+    if (currentUser.role === 'seller' && currentUser.storeName) {
+      return res.status(400).json({ success: false, message: 'Anda sudah terdaftar sebagai seller.' });
+    }
+
+    if (!storeName) {
+      return res.status(400).json({ success: false, message: 'Store Name is required.' });
+    }
+
+    // Cek ketersediaan nama toko
+    const storeExists = await User.findOne({ storeName });
+    if (storeExists) {
+      return res.status(400).json({ success: false, message: 'Store Name is already taken.' });
+    }
+
+    // Update user role menjadi seller
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { role: 'seller', storeName },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Account upgraded to Seller successfully',
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        storeName: updatedUser.storeName
       }
     });
   } catch (error) {

@@ -1,4 +1,3 @@
-import useAuthStore from "../stores/auth.store"; // Sesuaikan path-nya
 import axios from "axios";
 
 let isRefreshing = false;
@@ -14,11 +13,13 @@ const processQueue = (error, token = null) => {
 
 export const applyInterceptors = (axiosInstance) => {
   // REQUEST INTERCEPTOR
+  // Berjalan SEBELUM request dikirim ke backend
   axiosInstance.interceptors.request.use(
     (config) => {
-      // SINKRONISASI: Gunakan accessToken (bukan token)
-      const token = useAuthStore.getState().token;
+      // FIX: Ambil token langsung dari localStorage (Sinkron dengan authSlice/Redux)
+      const token = localStorage.getItem('token');
       if (token) {
+        // Sisipkan token ke header jika ada
         config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
@@ -27,25 +28,37 @@ export const applyInterceptors = (axiosInstance) => {
   );
 
   // RESPONSE INTERCEPTOR (Amazon Scale: Auto-Refresh Logic)
+  // Berjalan SETELAH menerima respon dari backend (Baik sukses maupun error)
   axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
+
+      // --- FIX: Handle "User no longer exists" (Database Reset) ---
+      if (error.response?.status === 401 && error.response?.data?.message === 'User no longer exists.') {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('token');
+        window.location.href = '/'; // Hard redirect ke home untuk login ulang
+        return Promise.reject(error);
+      }
 
       // Jika error 401 (Unauthorized) dan bukan karena retry
       if (error.response?.status === 401 && !originalRequest._retry) {
         
         // Jangan coba refresh jika memang sedang di halaman login
         if (window.location.pathname.includes('/login')) {
-          useAuthStore.getState().logout();
+          localStorage.removeItem('userInfo');
+          localStorage.removeItem('token');
           return Promise.reject(error);
         }
 
+        // Jika sedang proses refresh token, masukkan request lain ke antrian (Queue)
         if (isRefreshing) {
           return new Promise((resolve, reject) => {
             failedQueue.push({ resolve, reject });
           })
             .then((token) => {
+              // Saat antrian diproses, gunakan token baru
               originalRequest.headers.Authorization = `Bearer ${token}`;
               return axiosInstance(originalRequest);
             })
@@ -55,6 +68,7 @@ export const applyInterceptors = (axiosInstance) => {
         originalRequest._retry = true;
         isRefreshing = true;
 
+        // Mulai proses Refresh Token
         return new Promise((resolve, reject) => {
           const attemptRefresh = async () => {
             try {
@@ -68,15 +82,18 @@ export const applyInterceptors = (axiosInstance) => {
 
               const { accessToken } = response.data.data;
               
-              // SINKRONISASI: Update store dengan token baru
-              useAuthStore.getState().setAuth(useAuthStore.getState().user, accessToken);
+              // FIX: Update localStorage agar request berikutnya pakai token baru
+              localStorage.setItem('token', accessToken);
 
+              // Proses antrian request yang tertunda dengan token baru
               processQueue(null, accessToken);
               originalRequest.headers.Authorization = `Bearer ${accessToken}`;
               resolve(axiosInstance(originalRequest));
             } catch (refreshError) {
               processQueue(refreshError, null);
-              useAuthStore.getState().logout();
+              localStorage.removeItem('userInfo');
+              localStorage.removeItem('token');
+              window.location.href = '/'; // Redirect ke login
               reject(refreshError);
             } finally {
               isRefreshing = false;

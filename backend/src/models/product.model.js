@@ -7,6 +7,9 @@ const productSchema = new mongoose.Schema({
   brand: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand', index: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', index: true },
   
+  // --- RELASI SELLER (AMAZON STYLE) ---
+  seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
+  
   // --- IDENTITAS AMAZON (Crucial) ---
   // ASIN digunakan untuk pelacakan global dan integrasi sistem eksternal
   asin: { type: String, unique: true, sparse: true, uppercase: true }, 

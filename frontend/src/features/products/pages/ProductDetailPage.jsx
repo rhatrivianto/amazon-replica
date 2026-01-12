@@ -101,6 +101,17 @@ const ProductDetailPage = () => {
             <div className="border border-gray-300 rounded-lg p-4 sticky top-24 bg-white shadow-sm">
               <PriceTag price={product.price} />
               <p className="text-[#007600] text-sm font-medium mt-2">In Stock</p>
+
+              {/* --- NEW: Ships from / Sold by Info --- */}
+              <div className="text-xs text-gray-600 mt-3 mb-4 grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
+                <span className="text-gray-500">Ships from</span>
+                <span>{product.shippingInfo?.shipsFrom || 'Amazon'}</span>
+                
+                <span className="text-gray-500">Sold by</span>
+                <span className="text-[#007185] hover:underline cursor-pointer">
+                  {product.shippingInfo?.soldBy || 'Amazon.com'}
+                </span>
+              </div>
               
             <button 
               type="button"

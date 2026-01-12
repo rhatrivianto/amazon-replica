@@ -8,6 +8,7 @@ import Navbar from "../../shared/ui/Layout/Navbar";
 import Footer from "../../shared/ui/Layout/Footer";
 import { LoadingState } from "../../shared/ui/LoadingState/LoadingState";
 import AuthModal from "../../features/auth/components/AuthModal"; // Import di sini
+import { selectUserInfo } from '../../features/auth/authSlice'; // Import selector user info
 
 // Import Modular Routes
 import productRoutes from '../../features/admin/products/productRoutes.jsx';
@@ -37,21 +38,31 @@ import {
   PrivacyPage,
   TermsPage,
   AdminDashboardPage,
-  ManageSellerContentPage
+  ManageSellerContentPage,
+  SellerDashboardPage,
+  SellerInventoryPage
 } from './LazyRoutes';
 
 // --- LAYOUTS ---
 const RootLayout = () => {
   // Global modal state (Opsional jika tidak pakai Redux untuk Modal)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authInitialTab, setAuthInitialTab] = useState('signin');
+  const [authIsSeller, setAuthIsSeller] = useState(false);
+
+  const openAuthModal = (tab = 'signin', isSeller = false) => {
+    setAuthInitialTab(tab);
+    setAuthIsSeller(isSeller);
+    setIsAuthModalOpen(true);
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
       {/* Oper fungsi open modal ke Navbar jika diperlukan */}
-      <Navbar onOpenAuth={() => setIsAuthModalOpen(true)} />
+      <Navbar onOpenAuth={() => openAuthModal('signin', false)} />
       
       <main className="flex-grow pt-24 pb-16 bg-white">
-        <Outlet context={{ openAuthModal: () => setIsAuthModalOpen(true) }} /> {/* TEMPAT HALAMAN MUNCUL */}
+        <Outlet context={{ openAuthModal }} /> {/* TEMPAT HALAMAN MUNCUL */}
       </main>
 
       <Footer />
@@ -60,6 +71,8 @@ const RootLayout = () => {
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
+        initialTab={authInitialTab}
+        initialIsSeller={authIsSeller}
       />
     </div>
   );
@@ -70,6 +83,15 @@ const ProtectedAdmin = ({ children }) => {
   const { isAuthenticated, admin } = useSelector((state) => state.adminAuth);
   if (!isAuthenticated || admin?.role !== 'admin') {
     return <Navigate to="/admin/login" replace />;
+  }
+  return children;
+};
+
+// --- SECURITY GATE FOR SELLER ---
+const ProtectedSeller = ({ children }) => {
+  const userInfo = useSelector(selectUserInfo);
+  if (!userInfo || (userInfo.role !== 'seller' && userInfo.role !== 'admin')) {
+    return <Navigate to="/" replace />;
   }
   return children;
 };
@@ -110,6 +132,18 @@ const router = createBrowserRouter([
     children: [
       // Contoh: Halaman pendaftaran seller
       { path: 'register', element: <SellerRegisterPage /> },
+    ]
+  },
+  {
+    path: '/seller',
+    element: (
+      <ProtectedSeller>
+        <SellerLayout />
+      </ProtectedSeller>
+    ),
+    children: [
+      { path: 'dashboard', element: <SellerDashboardPage /> },
+      { path: 'inventory', element: <SellerInventoryPage /> },
     ]
   },
   { path: '/admin/login', element: <AdminLoginPage /> },
