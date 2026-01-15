@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const UserOrdersPage = () => {
   const { data, isLoading } = useGetMyOrdersQuery();
-  const orders = data?.data || [];
+  const orders = data?.orders || data?.data || [];
 
   if (isLoading) return <div className="p-10 flex justify-center"><Loader2 className="animate-spin text-[#e47911]" size={40} /></div>;
 

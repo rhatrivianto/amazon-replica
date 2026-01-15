@@ -1,33 +1,42 @@
-// controllers/admin.controller.js
+// backend/src/controllers/admin.controller.js
 import { asyncHandler } from '../utils/asyncHandler.js';
 import * as userService from '../services/user.service.js';
 import * as productService from '../services/product.service.js';
 import * as orderService from '../services/order.service.js';
 import databaseOrchestrator from '../scripts/databaseOrchestrator.js';
 import User from '../models/user.model.js';
+import Product from '../models/product.model.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 
-// 1. Dashboard Summary (Statistik Skala Amazon)
-export const getDashboardStats = asyncHandler(async (req, res) => {
-  const [userStats, salesStats, inventoryAlerts] = await Promise.all([
-    userService.getUserStats(),
-    orderService.getSalesStats(),
-    productService.getInventoryAlerts()
-  ]);
+// 1. Dashboard Summary
+export const getDashboardStats = async (req, res) => {
+  try {
+    const products = await Product.find({});
 
-  res.status(200).json({ 
-    status: 'success', 
-    data: {
-      users: userStats,
-      sales: salesStats[0] || { totalRevenue: 0, totalOrders: 0 },
-      inventory: inventoryAlerts
-    } 
-  });
-});
+    const totalSellers = await User.countDocuments({ role: 'seller' });
+    
+    // Hitung total nilai inventory (Price * Stock)
+    const totalValue = products.reduce((acc, item) => acc + (item.price * item.stock), 0);
 
-// 2. Statistik Umum untuk rute /stats
+    res.status(200).json({
+      success: true,
+      data: {
+        totalProducts: products.length, // Ini akan mengisi "Total SKUs"
+        totalInventoryValue: totalValue, // Ini akan mengisi "Inventory Value"
+        totalSellers: totalSellers,
+        lowStockCount: products.filter(p => p.stock < 5).length
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 2. Statistik Umum (FIX: Fungsi ini yang sebelumnya hilang)
+ */
 export const getStats = asyncHandler(async (req, res) => {
   const stats = await orderService.getSalesStats();
   
@@ -49,6 +58,7 @@ export const runBackup = asyncHandler(async (req, res) => {
   res.status(200).json({ status: 'success', message: 'Backup created', file: backup });
 });
 
+// 5. Login Admin
 export const loginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -56,15 +66,10 @@ export const loginAdmin = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Email dan password wajib diisi' });
   }
 
-  // PENTING: Tambahkan .select('+password') agar password hash terambil dari DB
   const user = await User.findOne({ email }).select('+password');
 
   if (!user || user.role !== 'admin') {
     return res.status(401).json({ message: 'Admin tidak ditemukan' });
-  }
-
-  if (!user.isVerified) {
-    return res.status(401).json({ message: 'Akun belum diverifikasi' });
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
@@ -72,7 +77,6 @@ export const loginAdmin = asyncHandler(async (req, res) => {
     return res.status(401).json({ message: 'Password salah' });
   }
 
-  // Generate JWT
   const token = jwt.sign(
     { id: user._id, role: user.role },
     env.jwtSecret,
@@ -82,10 +86,6 @@ export const loginAdmin = asyncHandler(async (req, res) => {
   res.status(200).json({
     status: 'success',
     token,
-    user: {
-      id: user._id,
-      email: user.email,
-      role: user.role
-    }
+    user: { id: user._id, name: user.name, email: user.email, role: user.role }
   });
 });

@@ -35,8 +35,8 @@ const userSchema = new mongoose.Schema({
     default: false, // Default tidak aktif sampai klik link
   },
   verificationToken: String,
-  resetPasswordToken: String,
-  resetPasswordExpire: Date,
+  passwordResetToken: String, 
+  passwordResetExpires: Date,
 }, { timestamps: true });
 
 // Hash password sebelum disimpan ke database
@@ -49,6 +49,17 @@ userSchema.pre('save', async function (next) {
 // Method untuk membandingkan password saat login
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Tambahkan Method ini di bawah method comparePassword
+userSchema.methods.createPasswordResetToken = function() {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  // Hash token agar jika DB bocor, hacker tidak bisa pakai tokennya
+  this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 Menit
+
+  return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);

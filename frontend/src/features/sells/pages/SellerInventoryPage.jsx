@@ -1,20 +1,18 @@
 
-import { useSelector } from 'react-redux';
-import { selectUserInfo } from '../../auth/authSlice';
-import { useGetProductsQuery } from '../../../services/adminServiceApi';
+import { useGetMyInventoryQuery } from '../../../services/sellerApi';
 import { Loader2, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const SellerInventoryPage = () => {
-  const userInfo = useSelector(selectUserInfo);
-  
-  // Fetch produk HANYA milik seller yang sedang login
-  const { data, isLoading } = useGetProductsQuery({ 
-    seller: userInfo?._id,
+  const SellerInventoryPage = () => {
+  // Cukup kirim params seperti limit atau search jika perlu
+  const { data, isLoading } = useGetMyInventoryQuery({ 
     limit: 50 
+    // Tidak perlu seller: userInfo._id, backend sudah tahu dari token!
   });
 
-  const products = data?.data || [];
+
+
+  const products = data?.products || data?.data || [];
 
   return (
     <div className="p-6 max-w-[1600px] mx-auto">

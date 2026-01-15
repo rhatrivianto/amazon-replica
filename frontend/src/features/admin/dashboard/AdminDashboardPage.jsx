@@ -1,15 +1,27 @@
 import { useState, useMemo } from 'react';
+ import { useNavigate } from 'react-router-dom';
 import { 
   Package, DollarSign, TrendingUp, AlertTriangle, 
-  ArrowRight, BarChart3, Globe 
+  ArrowRight, BarChart3, Globe, LogOut 
 } from 'lucide-react';
-import { useGetAdminProductsQuery } from '../../../services/adminServiceApi.js';
+import { 
+  useGetAdminProductsQuery, 
+  useGetDashboardStatsQuery 
+} from '../../../services/adminApi.js';
 import { useGetLatestRatesQuery } from '../../../services/currencyApi.js';
 
 const AdminDashboardPage = () => {
+  const navigate = useNavigate();
+
+  // 1. DATA FETCHING
   const { data: productsData, isLoading: isProdLoading } = useGetAdminProductsQuery();
   const { data: exchangeData, isLoading: isRateLoading } = useGetLatestRatesQuery('USD');
+  
+  // PERBAIKAN 1: Rename data menjadi 'statsData' dan isLoading menjadi 'isDashLoading'
+  // agar tidak bentrok dengan variabel lain.
+  const { data: statsData, isLoading: isDashLoading, error: dashError } = useGetDashboardStatsQuery();
 
+  // 2. CURRENCY CONFIGURATION
   const currencies = useMemo(() => [
     { code: 'IDR', symbol: 'Rp', label: 'Indonesia (IDR)' },
     { code: 'USD', symbol: '$', label: 'United States (USD)' },
@@ -21,75 +33,100 @@ const AdminDashboardPage = () => {
 
   const [selectedCurrency, setSelectedCurrency] = useState(currencies[0]);
 
-  // FIX: Membungkus productList dengan useMemo sesuai saran error Anda
-  const productList = useMemo(() => productsData?.data || [], [productsData]);
-
-// 1. Ambil data rates dengan pengecekan ganda
+  // 3. LOGIC & CALCULATIONS
+  const productList = useMemo(() => {
+    // Support response structure: { products: [...] } or { data: [...] }
+    return productsData?.products || productsData?.data || [];
+  }, [productsData]);
+  
   const rates = useMemo(() => {
-    // API open.er-api.com biasanya menggunakan 'rates'
-    // API exchangerate-api.com menggunakan 'conversion_rates'
     return exchangeData?.rates || exchangeData?.conversion_rates || {};
   }, [exchangeData]);
   
-  // 2. Ambil currentRate dengan Fallback IDR yang benar
   const currentRate = useMemo(() => {
     const rateFromApi = rates[selectedCurrency.code];
-    
     if (rateFromApi) return rateFromApi;
-
-    // Jika API belum load, berikan nilai manual sementara agar angka tidak diam di angka 1 (USD)
-    if (selectedCurrency.code === 'IDR') return 16100;
-    if (selectedCurrency.code === 'JPY') return 150;
-    if (selectedCurrency.code === 'AUD') return 1.5;
     
-    return 1; // Default USD
+    // Fallback static rates
+    const fallbacks = { IDR: 16100, JPY: 150, AUD: 1.5 };
+    return fallbacks[selectedCurrency.code] || 1;
   }, [rates, selectedCurrency]);
 
-  // Kalkulasi Total USD
-  const totalValueUSD = useMemo(() => {
-    return productList.reduce((acc, curr) => {
-      const price = Number(curr.price) || 0;
-      const stock = Number(curr.stock) || 0;
-      return acc + (price * stock);
-    }, 0);
-  }, [productList]);
-
-  const displayValue = totalValueUSD * currentRate;
-
-  // FIX: Menggunakan lowStockItems agar tidak error "unused"
   const lowStockItems = useMemo(() => {
     return productList.filter(p => p.stock < 10);
   }, [productList]);
 
-  const stats = [
-  { 
-    label: 'Inventory Value', 
-    value: `${selectedCurrency.symbol} ${displayValue.toLocaleString('id-ID', { 
-      minimumFractionDigits: selectedCurrency.code === 'IDR' ? 0 : 2,
-      maximumFractionDigits: 2 
-    })}`,
-    icon: DollarSign, 
-    color: 'text-green-500',
-    // INI ADALAH TEKS VERIFIKASI:
-    desc: `Live: 1 USD = ${currentRate.toLocaleString('id-ID')} ${selectedCurrency.code}`
-  },
-    { 
-      label: 'Total SKUs', 
-      value: productList.length, 
-      icon: Package, 
-      color: 'text-blue-500',
-      desc: 'Unique products listed'
-    },
-    { 
-      label: 'Stock Health', 
-      value: `${productList.length - lowStockItems.length} Healthy`, 
-      icon: TrendingUp, 
-      color: 'text-yellow-500',
-      desc: 'Items above reorder point'
-    },
-  ];
+  // PERBAIKAN 2: Definisikan dashboardData dengan aman sebelum digunakan di stats UI
+  const dashboardData = useMemo(() => {
+    // Support response structure: { data: {...} } or direct object {...}
+    
+    const data = statsData?.data || statsData || {};
+    return {
+      totalProducts: data.totalProducts || 0,
+      totalInventoryValue: data.totalInventoryValue || 0,
+      lowStockCount: data.lowStockCount || 0
+    };
+  }, [statsData]);
 
-  if (isProdLoading || isRateLoading) return <div className="p-10 text-center animate-pulse text-gray-400">Syncing with Amazon Global Markets...</div>;
+  // 4. AMAZON STYLE STATS (Using Backend Data)
+  const stats = useMemo(() => {
+    // Gunakan dashboardData yang sudah didefinisikan di atas
+    const backend = dashboardData;
+    const totalUSD = backend.totalInventoryValue || 0;
+    const displayVal = totalUSD * currentRate;
+
+    return [
+      { 
+        label: 'Inventory Value', 
+        value: `${selectedCurrency.symbol} ${displayVal.toLocaleString('id-ID', { 
+          minimumFractionDigits: selectedCurrency.code === 'IDR' ? 0 : 2,
+          maximumFractionDigits: 2 
+        })}`,
+        icon: DollarSign, 
+        color: 'text-green-500',
+        desc: `Base: $${totalUSD.toLocaleString()} USD`
+      },
+      { 
+        label: 'Total SKUs', 
+        value: backend.totalProducts || 0, 
+        icon: Package, 
+        color: 'text-blue-500',
+        desc: 'Unique products in catalog'
+      },
+      { 
+        label: 'Stock Health', 
+        value: `${(backend.totalProducts || 0) - (backend.lowStockCount || 0)} Healthy`, 
+        icon: TrendingUp, 
+        color: 'text-yellow-500',
+        desc: `${backend.lowStockCount || 0} items need restock`
+      },
+    ];
+  }, [dashboardData, currentRate, selectedCurrency]);
+
+  const handleLogout = () => {
+    // Hapus token admin dan user
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('token');
+    // Redirect ke login dan refresh untuk membersihkan state Redux
+    navigate('/admin/login');
+    window.location.reload();
+  };
+
+  // CCTV 2: Jika ada Error (misal 401 Unauthorized), TAMPILKAN DI LAYAR
+  if (dashError) {
+    return (
+      <div className="p-10 text-center text-red-500 bg-red-50 border border-red-200 rounded-lg m-4">
+        <h3 className="font-bold text-lg">Gagal Mengambil Data Dashboard</h3>
+        <p className="font-mono text-sm mt-2">{JSON.stringify(dashError)}</p>
+        <p className="text-xs text-gray-600 mt-4">Coba Logout dan Login ulang sebagai Admin.</p>
+      </div>
+    );
+  }
+
+  // PERBAIKAN 3: Pastikan semua loading state dicek
+  if (isProdLoading || isRateLoading || isDashLoading) {
+    return <div className="p-10 text-center animate-pulse text-gray-400">Syncing with Amazon Global Markets...</div>;
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -99,17 +136,27 @@ const AdminDashboardPage = () => {
           <h1 className="text-lg font-bold text-gray-700 uppercase tracking-tight">Seller Central Dashboard</h1>
         </div>
 
-        <div className="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
-          <Globe size={16} className="text-[#007185]" />
-          <select 
-            className="text-xs font-bold bg-transparent outline-none text-gray-600 cursor-pointer px-2"
-            value={selectedCurrency.code}
-            onChange={(e) => setSelectedCurrency(currencies.find(c => c.code === e.target.value))}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+            <Globe size={16} className="text-[#007185]" />
+            <select 
+              className="text-xs font-bold bg-transparent outline-none text-gray-600 cursor-pointer px-2"
+              value={selectedCurrency.code}
+              onChange={(e) => setSelectedCurrency(currencies.find(c => c.code === e.target.value))}
+            >
+              {currencies.map(c => (
+                <option key={c.code} value={c.code}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <button 
+            onClick={handleLogout}
+            className="bg-gray-800 hover:bg-gray-900 text-white p-2 rounded-lg shadow-sm transition-colors flex items-center gap-2 text-xs font-bold px-3"
+            title="Logout Admin"
           >
-            {currencies.map(c => (
-              <option key={c.code} value={c.code}>{c.label}</option>
-            ))}
-          </select>
+            <LogOut size={16} /> Logout
+          </button>
         </div>
       </div>
 
@@ -131,7 +178,6 @@ const AdminDashboardPage = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* INVENTORY ALERTS */}
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
           <div className="bg-red-50 border-b border-red-100 p-4 flex items-center justify-between">
             <h3 className="text-red-700 font-bold flex items-center gap-2 text-sm uppercase tracking-tighter">
@@ -158,12 +204,11 @@ const AdminDashboardPage = () => {
           </div>
         </div>
 
-        {/* PROMO CARD */}
         <div className="bg-[#232f3e] rounded-xl p-8 flex flex-col justify-center relative overflow-hidden group">
           <div className="relative z-10">
             <h2 className="text-2xl font-black text-[#febd69] mb-3">Global Expansion</h2>
             <p className="text-gray-300 text-sm mb-8 leading-relaxed max-w-sm">
-              Current inventory value is <span className="text-white font-bold">{selectedCurrency.symbol}{displayValue.toLocaleString()}</span>. 
+              Your inventory is ready for international markets. Start selling globally today.
             </p>
             <button className="bg-[#ffd814] text-[#131921] font-black py-3 px-8 rounded-lg hover:bg-[#f7ca00] text-xs uppercase tracking-widest shadow-lg">
               Launch Global Selling

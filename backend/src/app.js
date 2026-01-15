@@ -10,10 +10,12 @@ import { corsOptions } from "./config/cors.config.js";
 import apiRoutes from "./routes/index.js"; 
 import sellerContentRouter from "./routes/sellerContent.routes.js";
 import { globalErrorHandler } from "./middlewares/error.middleware.js";
-import { authLimiter, globalLimiter } from "./middlewares/rateLimit.middleware.js";
+import { globalLimiter } from "./middlewares/rateLimit.middleware.js";
 import adminRoutes from "./routes/admin.route.js";
 import seedRoutes from "./routes/seed.route.js";
 import addressRoutes from "./routes/address.route.js";
+import sellerRoutes from "./routes/seller.route.js";
+
 
 
 
@@ -66,10 +68,13 @@ app.use('/public', express.static(path.join(__dirname, '../public')));
 // --- 4. RATE LIMITING ---
 app.use("/api", globalLimiter);
 
+
 // --- 5. ROUTES ---
 // Semua rute (auth, products, orders) masuk lewat sini
-app.use("/api/v1/admin", adminRoutes);
-app.use("/api/v1", apiRoutes); 
+app.use("/api/v1/admin", adminRoutes);   // Untuk Super Admin (Kekuasaan penuh)
+app.use("/api/v1/seller", sellerRoutes); // Untuk Penjual (Hanya produk miliknya)
+app.use("/api/v1", apiRoutes);           // Untuk Pembeli & Umum (Read-only)
+
 app.use("/api/v1/seed", seedRoutes); // Route khusus seeding
 app.use("/api/v1/addresses", addressRoutes); // Route alamat user
 

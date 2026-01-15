@@ -4,7 +4,7 @@ import { selectUserInfo } from '../../auth/authSlice.js';
 import { toast } from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 
-import { useGetProductsQuery } from '../../../services/adminServiceApi.js';
+import { useGetProductsQuery } from '../../../services/productApi.js';
 import { useAddToCartMutation } from '../../../services/cartApi.js';
 import ProductCard from './ProductCard.jsx';
 import Pagination from '../../../shared/ui/Pagination.jsx';

@@ -119,9 +119,86 @@ export const verifyEmail = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// --- FORGOT PASSWORD ---
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User dengan email tersebut tidak ditemukan.' });
+    }
+
+    // 1. Generate Random Reset Token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    // 2. Simpan Hash Token ke DB & Set Expire (10 Menit)
+    user.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    user.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 Menit dari sekarang
+    await user.save({ validateBeforeSave: false });
+
+    // 3. Kirim Email
+    const resetUrl = `${env.clientUrl}/reset-password/${resetToken}`;
+    
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Reset Password Anda (Berlaku 10 Menit)',
+        html: `
+          <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee;">
+            <h2>Permintaan Reset Password</h2>
+            <p>Klik tombol di bawah untuk mengatur ulang kata sandi Anda:</p>
+            <a href="${resetUrl}" style="background: #e47911; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
+            <p>Jika Anda tidak meminta ini, abaikan email ini.</p>
+          </div>
+        `
+      });
+
+      res.status(200).json({ success: true, message: 'Link reset password telah dikirim ke email.' });
+    } catch (err) {
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      return res.status(500).json({ success: false, message: 'Gagal mengirim email. Coba lagi nanti.' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// --- RESET PASSWORD ---
+export const resetPassword = async (req, res) => {
+  try {
+    // 1. Ambil token dari params dan hash untuk dicocokkan dengan DB
+    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+    // 2. Cari user yang memiliki token tersebut dan BELUM expired
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Token tidak valid atau sudah kadaluarsa.' });
+    }
+
+    // 3. Update Password & Bersihkan token reset
+    user.password = req.body.password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password berhasil diubah. Silakan login.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // --- LOGIN ---
 export const login = async (req, res) => {
   try {
+    console.log("📦 Data dari Frontend(user):", req.body);
     const { email, password } = req.body;
 
 // 1. Cek Email & Password

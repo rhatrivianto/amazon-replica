@@ -1,4 +1,4 @@
-import { useGetAdminProductsQuery } from '../../../services/adminServiceApi.js';
+import { useGetAdminProductsQuery } from '../../../services/adminApi.js';
 import { Link } from 'react-router-dom';
 import PriceTag from './PriceTag';
 
@@ -6,7 +6,7 @@ const ProductRecommendations = ({ currentCategoryId, currentProductId }) => {
   const { data } = useGetAdminProductsQuery();
   
   // Cari produk di kategori yang sama tapi bukan produk yang sedang dibuka
-  const recommended = data?.data
+  const recommended = (data?.products || data?.data)
     ?.filter(p => p.category?._id === currentCategoryId && p._id !== currentProductId)
     .slice(0, 5) || [];
 

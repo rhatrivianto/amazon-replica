@@ -1,10 +1,11 @@
 import { apiSlice } from './apiSlice.js';
 
-export const adminServiceApi = apiSlice.injectEndpoints({
+export const adminApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // --- DASHBOARD STATS ---
     getDashboardStats: builder.query({
       query: () => '/admin/dashboard',
+      providesTags: ['AdminStats'], // Tambahkan ini
       keepUnusedDataFor: 60, // Cache data selama 60 detik agar tidak spam request
     }),
 
@@ -29,7 +30,7 @@ export const adminServiceApi = apiSlice.injectEndpoints({
         method: 'POST',
         body: formData, // FormData otomatis menangani boundary multipart
       }),
-      invalidatesTags: ['Products'],
+      invalidatesTags: ['AdminStats','Products'],
     }),
     updateProduct: builder.mutation({
       query: ({ id, formData }) => ({
@@ -37,14 +38,14 @@ export const adminServiceApi = apiSlice.injectEndpoints({
         method: 'PATCH',
         body: formData,
       }),
-      invalidatesTags: (result, error, { id }) => ['Products', { type: 'Products', id }],
+      invalidatesTags: (result, error, { id }) => ['AdminStats','Products', { type: 'Products', id }],
     }),
     deleteProduct: builder.mutation({
       query: (id) => ({
         url: `/products/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Products'],
+      invalidatesTags: ['AdminStats','Products'],
     }),
   }),
 });
@@ -58,6 +59,6 @@ export const {
   useCreateProductMutation, 
   useUpdateProductMutation, 
   useDeleteProductMutation 
-} = adminServiceApi;
+} = adminApi;
 
 export const useGetAdminProductByIdQuery = useGetProductByIdQuery;

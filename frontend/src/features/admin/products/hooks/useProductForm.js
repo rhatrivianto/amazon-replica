@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useCreateProductMutation, useUpdateProductMutation } from '../../../../services/adminServiceApi.js';
+import { useCreateProductMutation, useUpdateProductMutation } from '../../../../services/adminApi.js';
 import { toast } from 'react-hot-toast';
 
 export const useProductForm = (initialData = null) => {

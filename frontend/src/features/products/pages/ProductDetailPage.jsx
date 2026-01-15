@@ -9,7 +9,7 @@ import PriceTag from '../components/PriceTag.jsx';
 import ProductRating from '../components/ProductRating.jsx';
 import ProductRecommendations from '../components/ProductRecommendations.jsx';
 import { useAddToCartMutation } from '../../../services/cartApi.js';
-import { useGetProductByIdQuery } from '../../../services/adminServiceApi.js';
+import { useGetProductByIdQuery } from '../../../services/adminApi.js';
 
 const ProductDetailPage = () => {
   const { id } = useParams();

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useGetAdminProductsQuery, useDeleteProductMutation } from '../../../../services/adminServiceApi.js';
+import { useGetAdminProductsQuery, useDeleteProductMutation } from '../../../../services/adminApi.js';
 import { useProductFilter } from '../hooks/useProductFilter.js';
 import ProductTable from '../components/ProductTabel.jsx'; 
 import { Plus, Search, Package, AlertCircle, X } from 'lucide-react';

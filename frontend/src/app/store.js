@@ -9,11 +9,13 @@ import userAuthReducer from '../features/auth/authSlice.js'; // Asumsi ada reduc
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
-    adminAuth: adminAuthReducer, // State khusus Admin
-    auth: userAuthReducer,       // State khusus User
-
+    adminAuth: adminAuthReducer,
+    auth: userAuthReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware),
-    devTools: import.meta.env.NODE !== 'production',
+    getDefaultMiddleware().concat(
+      apiSlice.middleware
+      // , currencyApi.middleware // Tambahkan jika pakai API terpisah
+    ),
+  devTools: import.meta.env.MODE !== 'production',
 });

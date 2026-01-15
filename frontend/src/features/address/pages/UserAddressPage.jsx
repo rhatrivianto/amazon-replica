@@ -9,7 +9,7 @@ const UserAddressPage = () => {
   const [deleteAddress] = useDeleteAddressMutation();
   const [showForm, setShowForm] = useState(false);
 
-  const addresses = data?.data || [];
+  const addresses = data?.addresses || data?.data || [];
 
   const handleAdd = async (e) => {
     e.preventDefault();

@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import logger from './logger.js';
+
 
 dotenv.config();
 
@@ -15,8 +17,8 @@ export const transporter = nodemailer.createTransport({
 export const testMailConnection = async () => {
   try {
     await transporter.verify();
-    console.log('✅ Mail Server: Connected');
+    logger.info('✅ Mail Server: Connected and Ready'); // Menggunakan Winston
   } catch (error) {
-    console.log('❌ Mail Server: Error', error.message);
+    logger.error('❌ Mail Server: Connection Error - ' + error.message);
   }
 };

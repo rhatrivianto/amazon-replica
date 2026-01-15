@@ -18,7 +18,7 @@ router.use('/cart', cartRoute);
 router.use('/orders', orderRoute);
 router.use('/payments', paymentRoute);
 router.use('/brands', brandRoute);
-
+router.get('/', (req, res) => res.json({ message: "Welcome to Amazon API V1" }));
 
 
 export default router;

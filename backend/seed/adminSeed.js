@@ -3,8 +3,15 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import User from "../src/models/user.model.js";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env dari root backend
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const adminData = {
   name: "Admin",
@@ -27,14 +34,12 @@ async function seedAdmin() {
       return;
     }
 
-    const hashedPassword = await bcrypt.hash(adminData.password, 10);
-
     await User.create({
       name: adminData.name,
       email: adminData.email,
-      password: hashedPassword,
+      password: adminData.password, // "Abd123456"
       role: "admin",
-      isEmailVerified: true,
+      isVerified: true,
     });
 
     console.log("🔥 Admin successfully created");

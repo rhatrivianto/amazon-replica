@@ -7,7 +7,7 @@ import { selectUserInfo } from '../../auth/authSlice.js';
 
 const ReviewSection = ({ productId, productRating, numReviews }) => {
   const { data, isLoading } = useGetProductReviewsQuery(productId);
-  const reviews = data?.data || [];
+  const reviews = data?.reviews || data?.data || [];
   const userInfo = useSelector(selectUserInfo);
 
   return (

@@ -11,7 +11,7 @@ const Breadcrumbs = ({ activeCategoryId }) => {
     skip: !activeCategoryId,
   });
 
-  const category = data?.data;
+  const category = data?.category || data?.data;
   const breadcrumbs = [];
 
   if (category) {

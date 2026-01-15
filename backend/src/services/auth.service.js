@@ -43,3 +43,50 @@ export const refreshUserToken = async (token) => {
   
   return generateTokens(user);
 };
+/**
+ * Mengirim email instruksi reset password
+ * @param {string} email 
+ */
+import User from '../models/user.model.js';
+import crypto from 'crypto';
+
+// ... (fungsi login/register tetap sama) ...
+
+/**
+ * Service murni untuk mencari user dan generate token
+ */
+export const validateForgotPasswordRequest = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) return null;
+
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+  
+  return { user, resetToken };
+};
+
+/**
+ * Service murni untuk reset password
+ */
+export const resetUserPassword = async (token, newPassword) => {
+  // 1. Hash token dari URL untuk dicocokkan dengan yang ada di DB
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  // 2. Cari user yang memiliki token valid dan belum expired
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
+  });
+
+  // 3. Jika tidak ditemukan, kembalikan null
+  if (!user) return null;
+
+  // 4. Update password (middleware 'pre-save' di model akan otomatis melakukan hashing)
+  user.password = newPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  
+  await user.save();
+  
+  return user;
+}; f

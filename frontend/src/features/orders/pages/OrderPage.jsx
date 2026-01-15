@@ -4,7 +4,7 @@ import { Package, Clock, CheckCircle2, ChevronRight } from 'lucide-react';
 
 const OrderPage = () => {
   const { data, isLoading, error } = useGetMyOrdersQuery();
-  const orders = data?.data || [];
+  const orders = data?.orders || data?.data || [];
 
   if (isLoading) return <div className="p-10 text-center">Loading your orders...</div>;
   if (error) return <div className="p-10 text-center text-red-500">Failed to load orders.</div>;

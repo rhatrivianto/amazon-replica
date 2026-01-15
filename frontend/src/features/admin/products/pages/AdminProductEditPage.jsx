@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGetAdminProductByIdQuery } from '../../../../services/adminServiceApi.js';
+import { useGetAdminProductByIdQuery } from '../../../../services/adminApi.js';
 import { useProductForm } from '../hooks/useProductForm.js';
 import ProductForm from '../components/ProductForm.jsx';
 import { ArrowLeft, Edit3, Loader2 } from 'lucide-react';
@@ -10,7 +10,7 @@ const AdminProductEditPage = () => {
 
   // 1. Ambil data produk lama dari database
   const { data, isLoading: isFetching, error } = useGetAdminProductByIdQuery(id);
-  const productData = data?.data;
+  const productData = data?.product || data?.data;
 
   // 2. Gunakan Hook Form kita (Kirim productData sebagai initialData)
   const { handleSubmit, isLoading: isUpdating } = useProductForm(productData);
