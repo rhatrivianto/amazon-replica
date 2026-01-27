@@ -13,6 +13,8 @@ dist
 dist-ssr
 *.local
 
+important command.md
+
 .env
 .env.development
 .env.production

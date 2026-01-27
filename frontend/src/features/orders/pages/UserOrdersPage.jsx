@@ -51,7 +51,7 @@ const UserOrdersPage = () => {
                   Status: <span className="uppercase text-green-700">{order.status || 'Processing'}</span>
                 </h3>
                 <div className="space-y-4">
-                  {order.orderItems.map((item) => (
+                  {(order.orderItems || order.items || []).map((item) => (
                     <div key={item._id} className="flex gap-4 items-center border-b last:border-0 pb-4 last:pb-0">
                       <img src={item.image} alt={item.name} className="w-20 h-20 object-contain border p-1" />
                       <div>
