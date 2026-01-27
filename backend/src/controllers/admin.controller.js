@@ -1,0 +1,91 @@
+// backend/src/controllers/admin.controller.js
+import { asyncHandler } from '../utils/asyncHandler.js';
+import * as userService from '../services/user.service.js';
+import * as productService from '../services/product.service.js';
+import * as orderService from '../services/order.service.js';
+import databaseOrchestrator from '../scripts/databaseOrchestrator.js';
+import User from '../models/user.model.js';
+import Product from '../models/product.model.js';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { env } from '../config/env.js';
+
+// 1. Dashboard Summary
+export const getDashboardStats = async (req, res) => {
+  try {
+    const products = await Product.find({});
+
+    const totalSellers = await User.countDocuments({ role: 'seller' });
+    
+    // Hitung total nilai inventory (Price * Stock)
+    const totalValue = products.reduce((acc, item) => acc + (item.price * item.stock), 0);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalProducts: products.length, // Ini akan mengisi "Total SKUs"
+        totalInventoryValue: totalValue, // Ini akan mengisi "Inventory Value"
+        totalSellers: totalSellers,
+        lowStockCount: products.filter(p => p.stock < 5).length
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 2. Statistik Umum (FIX: Fungsi ini yang sebelumnya hilang)
+ */
+export const getStats = asyncHandler(async (req, res) => {
+  const stats = await orderService.getSalesStats();
+  
+  res.status(200).json({
+    status: 'success',
+    data: stats[0] || { totalRevenue: 0, totalOrders: 0 }
+  });
+});
+
+// 3. Database Health Check
+export const getDatabaseHealth = asyncHandler(async (req, res) => {
+  const health = await databaseOrchestrator.getSystemStatus();
+  res.status(200).json({ status: 'success', data: health });
+});
+
+// 4. Database Backup
+export const runBackup = asyncHandler(async (req, res) => {
+  const backup = await databaseOrchestrator.backup.createBackup();
+  res.status(200).json({ status: 'success', message: 'Backup created', file: backup });
+});
+
+// 5. Login Admin
+export const loginAdmin = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email dan password wajib diisi' });
+  }
+
+  const user = await User.findOne({ email }).select('+password');
+
+  if (!user || user.role !== 'admin') {
+    return res.status(401).json({ message: 'Admin tidak ditemukan' });
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    return res.status(401).json({ message: 'Password salah' });
+  }
+
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    env.jwtSecret,
+    { expiresIn: '1d' }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    token,
+    user: { id: user._id, name: user.name, email: user.email, role: user.role }
+  });
+});
