@@ -146,7 +146,7 @@ const router = createBrowserRouter([
       { path: 'inventory', element: <SellerInventoryPage /> },
     ]
   },
-  { path: '/admin/login', element: <AdminLoginPage /> },
+  { path: '/admin/login', element: <AdminDashboardPage /> },
   {
     path: '/admin',
     element: (
