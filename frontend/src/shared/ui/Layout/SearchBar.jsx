@@ -19,8 +19,10 @@ const SearchBar = () => {
   };
 
   return (
-    <form onSubmit={handleSearch} className="flex-1 flex items-center h-10 min-w-[150px] group">
-      <div className="relative h-full">
+    // RUBAH DI SINI: Ganti min-w-[150px] menjadi min-w-0 agar tidak memaksa lebar di HP
+    <form onSubmit={handleSearch} className="flex-1 flex items-center h-10 min-w-0 group">
+      {/* Dropdown Kategori */}
+      <div className="relative h-full shrink-0">
         <select 
           value={selectedCat}
           onChange={(e) => setSelectedCat(e.target.value)}
@@ -35,14 +37,17 @@ const SearchBar = () => {
       
       <input 
         type="text" 
-        className="flex-1 h-full px-4 outline-none text-black text-sm focus:ring-2 focus:ring-[#febd69] z-10" 
+        // RUBAH DI SINI: rounded-l-md ditambahkan jika di HP (saat select hidden)
+        className="flex-1 h-full px-3 md:px-4 outline-none text-black text-sm focus:ring-2 focus:ring-[#febd69] z-10 rounded-l-md md:rounded-l-none" 
         placeholder="Search Amazon"
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
       />
       
-      <button type="submit" className="bg-[#febd69] hover:bg-[#f3a847] h-full px-5 rounded-r-md transition-colors">
-        <Search size={22} className="text-[#131921]" />
+      <button type="submit"
+      // RUBAH DI SINI: Perkecil padding (px) di mobile agar tidak makan tempat 
+      className="bg-[#febd69] hover:bg-[#f3a847] h-full px-3 md:px-5 rounded-r-md transition-colors shrink-0">
+        <Search size={20} className="text-[#131921] md:size-[22px]" />
       </button>
     </form>
   );

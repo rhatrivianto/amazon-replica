@@ -26,20 +26,20 @@ const ManageSellerContentPage = () => {
     e.preventDefault();
     try {
       await createContent(formData).unwrap();
-      toast.success('Konten berhasil ditambahkan!');
+      toast.success('Content added successfully!');
       setFormData({ title: '', subtitle: '', description: '', iconKey: 'globe', section: 'guides', imageUrl: '', linkUrl: '' });
     } catch {
-      toast.error('Gagal menambah konten');
+      toast.error('Failde to add content');
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Yakin ingin menghapus konten ini?')) {
+    if (window.confirm('Are you sure you want to delete this content?')) {
       try {
         await deleteContent(id).unwrap();
-        toast.success('Konten dihapus');
-      } catch {
-        toast.error('Gagal menghapus');
+        toast.success('Content deleted');
+      } catch (error) {
+        toast.error('Failed to delete content');
       }
     }
   };
@@ -66,7 +66,7 @@ const ManageSellerContentPage = () => {
         <div className="lg:col-span-1">
           <div className="bg-white p-6 rounded-lg shadow border border-gray-200 sticky top-6">
             <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-              <Plus size={20} /> Tambah Konten Baru
+              <Plus size={20} /> Add new content
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -191,7 +191,7 @@ const ManageSellerContentPage = () => {
           
           {contentData?.data?.length === 0 && (
             <div className="text-center py-10 text-gray-500 bg-gray-50 rounded border border-dashed">
-              Belum ada konten. Silakan tambahkan dari form di sebelah kiri.
+              No content available.. Please add from form  on left side.
             </div>
           )}
         </div>

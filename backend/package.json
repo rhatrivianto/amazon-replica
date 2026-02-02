@@ -14,7 +14,7 @@
 
     "start": "node src/server.js",
 
-    "start:production": "NODE_ENV=production node src/server.js"
+    "start:production": "cross-env NODE_ENV=production node src/server.js"
 
   },
 
@@ -35,6 +35,8 @@
     "cookie-parser": "^1.4.6",
 
     "cors": "^2.8.5",
+
+    "cross-env": "^10.1.0",
 
     "dotenv": "^16.4.5",
 
@@ -79,3 +81,4 @@
   }
 
 }
+

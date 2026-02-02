@@ -37,7 +37,7 @@ const AdminCategoryPage = () => {
     <div className="p-6 max-w-4xl mx-auto bg-gray-50 min-h-screen">
       <header className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <Tag className="text-[#e47911]" /> Category Management
+          <Tag className="text-[#e47911]" /> Category management
         </h1>
         <p className="text-gray-500 text-sm">Manage product categories for your Amazon catalog</p>
       </header>

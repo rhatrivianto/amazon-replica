@@ -16,12 +16,12 @@ const AdminProductPage = () => {
   const { searchTerm, setSearchTerm, filteredProducts } = useProductFilter(products?.data || []);
 
   const handleDelete = async (id) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus produk ini dari katalog Amazon?")) {
+    if (window.confirm("Are you sure you want to delete this product from your Amazon catalog?")) {
       try {
         await deleteProduct(id).unwrap();
-        toast.success("Produk berhasil dihapus");
+        toast.success("Product deleted successfully");
       } catch {
-        toast.error("Gagal menghapus produk");
+        toast.error("Failed to delete product");
       }
     }
   };
@@ -37,8 +37,8 @@ const AdminProductPage = () => {
   if (isError) return (
     <div className="bg-red-900/20 border border-red-900 text-red-400 p-6 rounded-xl flex items-center gap-4">
       <AlertCircle size={24} />
-      <p>Gagal mengambil data produk. Pastikan Anda login sebagai Admin.</p>
-      <button onClick={() => refetch()} className="underline ml-auto">Coba Lagi</button>
+      <p>Failed to fetch product data. Please ensure you are logged in as an Administrator.</p>
+      <button onClick={() => refetch()} className="underline ml-auto">Try again</button>
     </div>
   );
 
@@ -57,7 +57,7 @@ const AdminProductPage = () => {
           to="create" 
           className="bg-[#febd69] hover:bg-[#f3a847] text-black px-6 py-2.5 rounded-lg flex items-center justify-center gap-2 font-bold transition-all shadow-lg shadow-yellow-500/10"
         >
-          <Plus size={20} /> Tambah Produk Baru
+          <Plus size={20} /> Add new Product
         </Link>
       </div>
 
@@ -67,7 +67,7 @@ const AdminProductPage = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <input 
             type="text"
-            placeholder="Cari berdasarkan nama atau kategori produk..."
+            placeholder=" produk..."
             className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 pl-10 pr-4 text-white focus:ring-2 focus:ring-yellow-500 outline-none transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -85,7 +85,7 @@ const AdminProductPage = () => {
         <div className="bg-gray-800 border border-gray-700 rounded-xl p-3 flex items-center justify-center gap-3 text-gray-300">
           <span className="text-sm">Total:</span>
           <span className="text-xl font-bold text-yellow-500">{filteredProducts.length}</span>
-          <span className="text-sm">Produk</span>
+          <span className="text-sm">Product</span>
         </div>
       </div>
 
@@ -101,8 +101,8 @@ const AdminProductPage = () => {
         ) : (
           <div className="p-20 text-center text-gray-500">
             <Search size={48} className="mx-auto mb-4 opacity-20" />
-            <p className="text-lg">Tidak ada produk yang ditemukan</p>
-            <p className="text-sm">Coba kata kunci lain atau tambah produk baru</p>
+            <p className="text-lg">No products found</p>
+            <p className="text-sm">Try a different keyword or add a new product</p>
           </div>
         )}
       </div>

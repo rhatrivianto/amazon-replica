@@ -45,7 +45,7 @@ export const register = async (req, res) => {
       role: role === 'seller' ? 'seller' : 'user',
       storeName: role === 'seller' ? storeName : undefined,
       verificationToken,
-      isVerified: false
+      isEmailVerified: false
     });
 
     // 4. URL Verifikasi (Frontend Port 5173)
@@ -77,14 +77,14 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Email verifikasi telah dikirim ke Mailtrap.'
+      message: 'Verification email has been sended to Mailtrap.'
       });
     } catch (emailError) {
-      console.error("❌ Gagal mengirim email verifikasi:", emailError.message);
+      console.error("❌ Failde to send a verification email:", emailError.message);
       // Tetap return sukses karena user sudah terbuat di DB
       res.status(201).json({
         success: true,
-        message: 'Registrasi berhasil, namun email verifikasi gagal terkirim. Silakan hubungi admin.'
+        message: 'Registration successful, but verification email failed to send. Please contact the administrator.'
       });
     }
   } catch (error) {
@@ -110,7 +110,7 @@ export const verifyEmail = async (req, res) => {
     }
 
     // 2. Jika ditemukan, verifikasi
-    user.isVerified = true;
+    user.isEmailVerified = true;
     user.verificationToken = undefined;
     await user.save();
 
@@ -160,7 +160,7 @@ export const forgotPassword = async (req, res) => {
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save({ validateBeforeSave: false });
-      return res.status(500).json({ success: false, message: 'Gagal mengirim email. Coba lagi nanti.' });
+      return res.status(500).json({ success: false, message: 'Failed to send the email. try it again.' });
     }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -213,7 +213,7 @@ if (user.role === 'admin' && !req.originalUrl.includes('admin')) {
 }
 
 // 3. LOGIKA YANG KITA BAHAS: Cegah User yang belum verifikasi
-if (user.role === 'user' && !user.isVerified) {
+if (user.role === 'user' && !user.isEmailVerified) {
   return res.status(403).json({ success: false, message: 'Silakan verifikasi email Anda terlebih dahulu.' });
 }
 

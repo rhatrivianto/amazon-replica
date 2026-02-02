@@ -116,7 +116,7 @@ const AdminDashboardPage = () => {
   if (dashError) {
     return (
       <div className="p-10 text-center text-red-500 bg-red-50 border border-red-200 rounded-lg m-4">
-        <h3 className="font-bold text-lg">Gagal Mengambil Data Dashboard</h3>
+        <h3 className="font-bold text-lg">Failed to get the data from Dashboard</h3>
         <p className="font-mono text-sm mt-2">{JSON.stringify(dashError)}</p>
         <p className="text-xs text-gray-600 mt-4">Coba Logout dan Login ulang sebagai Admin.</p>
       </div>

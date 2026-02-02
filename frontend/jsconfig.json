@@ -3,6 +3,7 @@
     "baseUrl": "src",
     "module": "esnext",
     "moduleResolution": "node",
+    "skipLibCheck": true, // Tambahkan baris ini
     "paths": {
       "app/*": ["app/*"],
       "features/*": ["features/*"],

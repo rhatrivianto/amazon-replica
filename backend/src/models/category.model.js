@@ -4,7 +4,7 @@ import slugify from 'slugify';
 const categorySchema = new mongoose.Schema({
   name: { 
     type: String, 
-    required: [true, 'Nama kategori harus diisi'], 
+    required: [true, 'CAtegory name must be filled'], 
     unique: true, 
     trim: true 
   },

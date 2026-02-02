@@ -19,3 +19,20 @@ const connectDB = async () => {
 };
 
 export default connectDB;
+
+
+// // Database Connection Orchestrator
+// const connectDB = async () => {
+//     try {
+//         const conn = await mongoose.connect(process.env.MONGO_URI, {
+//             // Options untuk memastikan koneksi stabil di lingkungan Docker/WSL
+//             useNewUrlParser: true,
+//             useUnifiedTopology: true,
+//         });
+        
+//         console.log(`🚀 MongoDB Connected: ${conn.connection.host}`);
+//     } catch (error) {
+//         console.error(`❌ Database Error: ${error.message}`);
+//         process.exit(1);
+//     }
+// };

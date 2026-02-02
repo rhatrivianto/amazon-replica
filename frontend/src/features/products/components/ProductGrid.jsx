@@ -52,7 +52,7 @@ const ProductGrid = ({ onOpenAuth, categoryId, searchQuery }) => {
     try {
       await addToCart({ productId: product._id, quantity: 1 }).unwrap();
     } catch (err) {
-      toast.error(err.data?.message || 'Gagal menambahkan ke keranjang');
+      toast.error(err.data?.message || 'Failed to add it to cart');
     }
   };
 

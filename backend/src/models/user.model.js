@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
     trim: true
   },
   // --- FIELD UNTUK VERIFIKASI EMAIL ---
-  isVerified: {
+  isEmailVerified: {
     type: Boolean,
     default: false, // Default tidak aktif sampai klik link
   },

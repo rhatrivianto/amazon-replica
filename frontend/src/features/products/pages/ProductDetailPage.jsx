@@ -33,7 +33,7 @@ const ProductDetailPage = () => {
     try {
       await addToCart({ productId: product._id, quantity: 1 }).unwrap();
     } catch (err) {
-      toast.error(err.data?.message || 'Gagal menambahkan produk.');
+      toast.error(err.data?.message || 'Failed to add product.');
     }
   }, [userInfo, openAuthModal, addToCart, product]);
 

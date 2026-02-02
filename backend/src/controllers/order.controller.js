@@ -12,7 +12,7 @@ export const checkout = async (req, res, next) => {
     if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
       return res.status(400).json({
         status: 'error',
-        message: 'Keranjang belanja Anda kosong. Silakan tambahkan produk terlebih dahulu.'
+        message: 'Your cart is empty. Please add products before proceed.'
       });
     }
 

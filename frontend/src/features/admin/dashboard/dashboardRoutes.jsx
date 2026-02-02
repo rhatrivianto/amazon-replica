@@ -10,7 +10,7 @@ const dashboardRoutes = [
     path: 'dashboard',
     element: <AdminDashboardPage />,
   },
-  // Kedepannya bisa ditambah:
+  // Kedepannya bisa di:
   // { path: 'analytics', element: <AnalyticsPage /> },
   // { path: 'sales-report', element: <SalesReportPage /> },
 ];

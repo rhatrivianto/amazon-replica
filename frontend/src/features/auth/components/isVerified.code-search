@@ -1,0 +1,42 @@
+# Query: isVerified
+# ContextLines: 1
+
+8 results - 6 files
+
+backend/seed/adminSeed.js:
+  41        role: "admin",
+  42:       isEmailVerified: true,
+  43      });
+
+backend/src/config/passport.js:
+  19              role: 'user',
+  20:             isVerified: true
+  21            });
+
+backend/src/controllers/auth.controller.js:
+   47        verificationToken,
+   48:       isEmailVerified: false
+   49      });
+
+  112      // 2. Jika ditemukan, verifikasi
+  113:     user.isEmailVerified = true;
+  114      user.verificationToken = undefined;
+
+  215  // 3. LOGIKA YANG KITA BAHAS: Cegah User yang belum verifikasi
+  216: if (user.role === 'user' && !user.isEmailVerified) {
+  217    return res.status(403).json({ success: false, message: 'Silakan verifikasi email Anda terlebih dahulu.' });
+
+backend/src/models/user.model.js:
+  32    // --- FIELD UNTUK VERIFIKASI EMAIL ---
+  33:   isEmailVerified: {
+  34      type: Boolean,
+
+backend/src/scripts/createAdmin.js:
+  37        role: 'admin',
+  38:       isVerified: true, // Admin tidak perlu verifikasi email
+  39      });
+
+frontend/important command.md:
+  484  
+  485:     Cari field bernama isVerified.
+  486  

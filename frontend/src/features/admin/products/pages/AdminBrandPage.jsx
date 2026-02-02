@@ -15,19 +15,19 @@ const AdminBrandPage = () => {
     try {
       await createBrand({ name: newBrand }).unwrap();
       setNewBrand('');
-      toast.success('Brand resmi terdaftar!');
+      toast.success('Official Brand registered!');
     } catch (err) {
-      toast.error(err.data?.message || 'Gagal mendaftarkan brand');
+      toast.error(err.data?.message || 'Failed to register brand');
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Hapus brand ini dari registry?')) {
+    if (window.confirm('Delete this brand from registry?')) {
       try {
         await deleteBrand(id).unwrap();
-        toast.success('Brand dihapus');
+        toast.success('Brand deleted');
       } catch {
-        toast.error('Gagal menghapus');
+        toast.error('Failed to delete');
       }
     }
   };
@@ -38,14 +38,14 @@ const AdminBrandPage = () => {
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <Award className="text-[#e47911]" /> Brand Registry
         </h1>
-        <p className="text-gray-500 text-sm">Kelola merk dagang yang tersedia di katalog Anda</p>
+        <p className="text-gray-500 text-sm">Manage trademarks available in your registered catalog!</p>
       </header>
 
       <div className="bg-white border border-gray-200 rounded-xl p-6 mb-8 shadow-sm">
         <form onSubmit={handleAddBrand} className="flex gap-4">
           <input
             type="text"
-            placeholder="Nama Brand Baru (Contoh: Samsung, Nike)"
+            placeholder="Name of new brand (Contoh: Samsung, Nike)"
             className="flex-1 border border-gray-300 rounded-lg px-4 py-2 outline-none focus:ring-1 focus:ring-[#e47911]"
             value={newBrand}
             onChange={(e) => setNewBrand(e.target.value)}
@@ -56,7 +56,7 @@ const AdminBrandPage = () => {
             className="bg-[#ffd814] hover:bg-[#f7ca00] text-black px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50"
           >
             {isCreating ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
-            Daftarkan
+            Signup
           </button>
         </form>
       </div>

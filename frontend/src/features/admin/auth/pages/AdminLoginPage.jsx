@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, User, ShieldCheck } from 'lucide-react';
+import { Lock, User, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAdminLoginMutation } from '../../../../services/adminAuthApi.js';
 import { useDispatch } from 'react-redux';
@@ -9,6 +9,7 @@ import { setAdminCredentials } from '../adminAuthSlice.js'; // Path disesuaikan 
 const AdminLoginPage = () => {
 const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const [login, { isLoading }] = useAdminLoginMutation();
   const navigate = useNavigate();
@@ -68,14 +69,23 @@ const handleLogin = async (e) => {
           <div className="relative">
             <Lock className="absolute left-3 top-3.5 text-gray-500" size={18} />
             <input 
-              type="password" 
+              type={showPassword ? 'text' : 'password'} 
               required
               placeholder="Password" 
               className="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 pl-10 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none transition-all"
               onChange={(e) => setPassword(e.target.value)}
               value={password}
             />
+              {/* Tombol Eye Icon */}
+            <button
+              type="button" // Penting: bertipe button agar tidak men-submit form
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3.5 text-gray-500 hover:text-yellow-500 transition-colors"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
+
 
           {/* Submit Button */}
           <button 

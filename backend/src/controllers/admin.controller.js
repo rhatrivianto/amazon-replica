@@ -73,6 +73,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
+  console.log("Hasil Match:", isMatch);
   if (!isMatch) {
     return res.status(401).json({ message: 'Password salah' });
   }
