@@ -20,7 +20,7 @@ env.config.js
 query.config.js
 routes.config.js
 dev.route.js
-
+.env.save
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

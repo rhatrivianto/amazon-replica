@@ -7,7 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 .env.latihan
-
+.env.save
 
 node_modules/
 dist/
@@ -28,3 +28,4 @@ important command.md
 *.njsproj
 *.sln
 *.sw?
+.env.save
