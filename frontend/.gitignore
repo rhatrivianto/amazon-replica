@@ -19,7 +19,7 @@ important command.md
 .env.development
 .env.production
 nginx.conf
-CEK KODING.jsx
+
 
 # Editor directories and files
 .vscode/*
@@ -27,8 +27,6 @@ CEK KODING.jsx
 .idea
 .DS_Store
 *.suo
-*.ntvs*
-*.njsproj
 *.sln
 *.sw?
 
