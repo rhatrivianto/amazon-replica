@@ -6,11 +6,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-"build": "vite build && cp dist/index.html dist/404.html",
+    "build": "vite build && cp dist/index.html dist/404.html && echo '/* /index.html 200' > dist/_redirects",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
-    "cache-clean": "echo 'Force Vercel Reinstall 03'"
+    "cache-clean": "echo 'Force Vercel Reinstall 04'"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",

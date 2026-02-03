@@ -1,4 +1,4 @@
-import { createHashRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
 import { Suspense, useState } from "react";
 import { useSelector } from 'react-redux';
 
@@ -7,8 +7,8 @@ import AdminLayout from '../../shared/ui/Layout/AdminLayout';
 import Navbar from "../../shared/ui/Layout/Navbar";
 import Footer from "../../shared/ui/Layout/Footer";
 import { LoadingState } from "../../shared/ui/LoadingState/LoadingState";
-import AuthModal from "../../features/auth/components/AuthModal"; // Import di sini
-import { selectUserInfo } from '../../features/auth/authSlice'; // Import selector user info
+import AuthModal from "../../features/auth/components/AuthModal";
+import { selectUserInfo } from '../../features/auth/authSlice';
 
 // Import Modular Routes
 import productRoutes from '../../features/admin/products/productRoutes.jsx';
@@ -43,9 +43,7 @@ import {
   SellerInventoryPage
 } from './LazyRoutes';
 
-// --- LAYOUTS ---
 const RootLayout = () => {
-  // Global modal state (Opsional jika tidak pakai Redux untuk Modal)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authInitialTab, setAuthInitialTab] = useState('signin');
   const [authIsSeller, setAuthIsSeller] = useState(false);
@@ -58,16 +56,11 @@ const RootLayout = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Oper fungsi open modal ke Navbar jika diperlukan */}
       <Navbar onOpenAuth={() => openAuthModal('signin', false)} />
-      
       <main className="flex-grow pt-24 pb-16 bg-white">
-        <Outlet context={{ openAuthModal }} /> {/* TEMPAT HALAMAN MUNCUL */}
+        <Outlet context={{ openAuthModal }} />
       </main>
-
       <Footer />
-
-      {/* AuthModal diletakkan di sini agar tersedia di semua halaman Customer */}
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
@@ -78,7 +71,6 @@ const RootLayout = () => {
   );
 };
 
-// --- SECURITY GATE ---
 const ProtectedAdmin = ({ children }) => {
   const { isAuthenticated, admin } = useSelector((state) => state.adminAuth);
   if (!isAuthenticated || admin?.role !== 'admin') {
@@ -87,7 +79,6 @@ const ProtectedAdmin = ({ children }) => {
   return children;
 };
 
-// --- SECURITY GATE FOR SELLER ---
 const ProtectedSeller = ({ children }) => {
   const userInfo = useSelector(selectUserInfo);
   if (!userInfo || (userInfo.role !== 'seller' && userInfo.role !== 'admin')) {
@@ -96,8 +87,7 @@ const ProtectedSeller = ({ children }) => {
   return children;
 };
 
-// --- ROUTER CONFIGURATION ---
-const router = createHashRouter([
+const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
@@ -130,7 +120,6 @@ const router = createHashRouter([
     path: '/sell-account',
     element: <SellerLayout />,
     children: [
-      // Contoh: Halaman pendaftaran seller
       { path: 'register', element: <SellerRegisterPage /> },
     ]
   },
@@ -163,8 +152,8 @@ const router = createHashRouter([
     ]
   },
   { path: '*', element: <NotFoundPage /> }
-],{
-   basename: import.meta.env.BASE_URL || '/' // TAMBAHKAN INI!
+], {
+   basename: "/" 
 });
 
 const AppRouter = () => (
