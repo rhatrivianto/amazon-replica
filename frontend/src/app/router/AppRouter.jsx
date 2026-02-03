@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
+import { createHashRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
 import { Suspense, useState } from "react";
 import { useSelector } from 'react-redux';
 
@@ -97,7 +97,7 @@ const ProtectedSeller = ({ children }) => {
 };
 
 // --- ROUTER CONFIGURATION ---
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: '/',
     element: <RootLayout />,

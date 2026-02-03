@@ -20,7 +20,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/', // Pastikan ini ada
+  base: './', // Pastikan ini ada
   build: {
     outDir: 'dist',
     sourcemap: false
