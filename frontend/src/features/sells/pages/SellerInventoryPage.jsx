@@ -1,19 +1,20 @@
-
+import { useState } from 'react'; // Tambahkan ini
 import { useGetMyInventoryQuery } from '../../../services/sellerApi';
 import { Loader2, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Pagination from '../../../shared/ui/Pagination.jsx'; // Import komponen pagination
 
-  const SellerInventoryPage = () => {
-  // Cukup kirim params seperti limit atau search jika perlu
+const SellerInventoryPage = () => {
+  const [page, setPage] = useState(1); // State untuk halaman
+  
   const { data, isLoading } = useGetMyInventoryQuery({ 
-    limit: 50 
-    // Tidak perlu seller: userInfo._id, backend sudah tahu dari token!
+    page, 
+    limit: 12 // Sesuaikan limit per halaman
   });
 
-
-
   const products = data?.products || data?.data || [];
-
+  const pagination = data?.pagination || {}; // Ambil data pagination dari backend
+  
   return (
     <div className="p-6 max-w-[1600px] mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -37,6 +38,7 @@ import { Link } from 'react-router-dom';
             <p className="text-sm mt-2">Click &quot;Add a Product&quot; to start selling.</p>
           </div>
         ) : (
+          <>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-gray-50 text-gray-700 border-b">
@@ -76,6 +78,16 @@ import { Link } from 'react-router-dom';
               </tbody>
             </table>
           </div>
+
+          {/* TAMBAHKAN PAGINATION DI SINI */}
+            <div className="p-4 border-t border-gray-100 flex justify-center bg-gray-50">
+              <Pagination 
+                currentPage={page}
+                totalPages={pagination.pages || 1}
+                onPageChange={(newPage) => setPage(newPage)}
+              />
+            </div>
+            </>
         )}
       </div>
     </div>

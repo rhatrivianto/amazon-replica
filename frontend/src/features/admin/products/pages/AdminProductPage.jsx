@@ -1,20 +1,22 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetAdminProductsQuery, useDeleteProductMutation } from '../../../../services/adminApi.js';
 import { useProductFilter } from '../hooks/useProductFilter.js';
 import ProductTable from '../components/ProductTabel.jsx'; 
 import { Plus, Search, Package, AlertCircle, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-
-
+import Pagination from '../../../../shared/ui/Pagination.jsx';
 
 const AdminProductPage = () => {
-  // 1. Ambil data dari RTK Query
-  const { data: products, isLoading, isError, refetch } = useGetAdminProductsQuery();
-  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+  const [page, setPage] = useState(1);
+  const { data: response, isLoading, isError, refetch } = useGetAdminProductsQuery({ page, limit: 12 });
   
-  // 2. Gunakan hook filter untuk pencarian
-  const { searchTerm, setSearchTerm, filteredProducts } = useProductFilter(products?.data || []);
+  const products = response?.data || [];
+  const pagination = response?.pagination || {};
 
+  // Gunakan data produk yang sudah di-fetch berdasarkan page
+  const { searchTerm, setSearchTerm, filteredProducts } = useProductFilter(products);
+  
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this product from your Amazon catalog?")) {
       try {
@@ -92,12 +94,22 @@ const AdminProductPage = () => {
       {/* Tabel Produk */}
       <div className="bg-gray-800 border border-gray-700 rounded-2xl overflow-hidden shadow-xl">
         {filteredProducts.length > 0 ? (
+          <>
           <ProductTable 
             products={filteredProducts} 
             onDelete={handleDelete}
             isDeleting={isDeleting}
             searchTerm={searchTerm}
           />
+          {/* TAMBAHKAN PAGINATION UNTUK ADMIN */}
+            <div className="p-6 border-t border-gray-700 flex justify-center">
+              <Pagination 
+                currentPage={page}
+                totalPages={pagination.pages || 1}
+                onPageChange={(newPage) => setPage(newPage)}
+              />
+            </div>
+          </>
         ) : (
           <div className="p-20 text-center text-gray-500">
             <Search size={48} className="mx-auto mb-4 opacity-20" />

@@ -16,10 +16,13 @@ export const adminApi = apiSlice.injectEndpoints({
       }),
       providesTags: ['Products'],
     }),
-    getAdminProducts: builder.query({
-      query: () => '/products',
-      providesTags: ['Products'],
-    }),
+  getAdminProducts: builder.query({
+  query: (params) => ({
+    url: '/products',
+    params: params, // Tambahkan ini agar parameter dari frontend terkirim ke backend
+  }),
+  providesTags: ['Products'],
+}),
     getProductById: builder.query({
       query: (id) => `/products/${id}`,
       providesTags: (result, error, id) => [{ type: 'Products', id }],

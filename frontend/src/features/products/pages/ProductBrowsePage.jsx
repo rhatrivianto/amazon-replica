@@ -3,8 +3,7 @@ import { useSearchParams, useOutletContext } from 'react-router-dom';
 import { useGetCategoriesQuery } from '../../../services/categoryApi.js';
 import Breadcrumbs from '../../../shared/ui/Breadcrumbs/Breadcrumbs.jsx';
 import { Star } from 'lucide-react';
-import ProductGrid from '../components/ProductGrid.jsx'; // Import komponen Grid yang sudah ada Pagination
-
+import ProductGrid from '../components/ProductGrid.jsx';
 
 const ProductBrowsePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -13,11 +12,11 @@ const ProductBrowsePage = () => {
   
   const query = searchParams.get('q') || '';
   const categoryIdFromUrl = searchParams.get('category');
+  const page = parseInt(searchParams.get('page')) || 1;
 
   const { data: catData } = useGetCategoriesQuery();
   const categories = catData?.data || [];
 
-  // Sinkronisasi URL ke State Sidebar
   useEffect(() => {
     setSelectedCategory(categoryIdFromUrl || null);
   }, [categoryIdFromUrl]);
@@ -29,7 +28,15 @@ const ProductBrowsePage = () => {
     } else {
       newParams.delete('category');
     }
+    newParams.set('page', '1'); 
     setSearchParams(newParams);
+  };
+
+  const handlePageChange = (newPage) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('page', newPage.toString());
+    setSearchParams(newParams);
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -72,15 +79,17 @@ const ProductBrowsePage = () => {
         </div>
       </aside>
 
+      {/* Konten Utama */}
       <main className="flex-1 p-6 bg-gray-50">
         <div className="mb-4">
           {selectedCategory && <Breadcrumbs activeCategoryId={selectedCategory} />}
         </div>
 
-        {/* Ganti manual grid dengan ProductGrid yang sudah ada Pagination */}
         <ProductGrid 
           categoryId={selectedCategory}
           searchQuery={query}
+          page={page}
+          onPageChange={handlePageChange}
           onOpenAuth={openAuthModal}
         />
       </main>
