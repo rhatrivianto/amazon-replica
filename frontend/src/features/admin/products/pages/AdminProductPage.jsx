@@ -10,7 +10,7 @@ import Pagination from '../../../../shared/ui/Pagination.jsx';
 const AdminProductPage = () => {
   const [page, setPage] = useState(1);
   const { data: response, isLoading, isError, refetch } = useGetAdminProductsQuery({ page, limit: 12 });
-  
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const products = response?.data || [];
   const pagination = response?.pagination || {};
 
@@ -98,6 +98,7 @@ const AdminProductPage = () => {
           <ProductTable 
             products={filteredProducts} 
             onDelete={handleDelete}
+            isDeleting={isDeleting}
             searchTerm={searchTerm}
           />
           {/* TAMBAHKAN PAGINATION UNTUK ADMIN */}
