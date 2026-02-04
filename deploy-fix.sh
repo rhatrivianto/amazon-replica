@@ -10,8 +10,7 @@ node --check backend/src/server.js
 echo "��� Staging changes..."
 git add .
 
-# 3. Commit dengan pesan standar + Timestamp
-TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+TESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 COMMIT_MSG="fix: non-blocking mail connection and startup optimization ($TIMESTAMP)"
 
 echo "��� Committing: $COMMIT_MSG"
