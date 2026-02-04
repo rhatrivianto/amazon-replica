@@ -10,16 +10,18 @@ import Pagination from '../../../../shared/ui/Pagination.jsx';
 const AdminProductPage = () => {
   const [page, setPage] = useState(1);
   const { data: response, isLoading, isError, refetch } = useGetAdminProductsQuery({ page, limit: 12 });
+  
+  // Pastikan baris ini ada dan isDeleting tertulis benar
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+  
   const products = response?.data || [];
   const pagination = response?.pagination || {};
-
-  // Gunakan data produk yang sudah di-fetch berdasarkan page
   const { searchTerm, setSearchTerm, filteredProducts } = useProductFilter(products);
   
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this product from your Amazon catalog?")) {
+    if (window.confirm("Are you sure you want to delete this product?")) {
       try {
+        // Gunakan deleteProduct yang dideklarasikan di atas
         await deleteProduct(id).unwrap();
         toast.success("Product deleted successfully");
       } catch {
@@ -28,7 +30,6 @@ const AdminProductPage = () => {
     }
   };
 
-  
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-400">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mb-4"></div>
@@ -39,14 +40,13 @@ const AdminProductPage = () => {
   if (isError) return (
     <div className="bg-red-900/20 border border-red-900 text-red-400 p-6 rounded-xl flex items-center gap-4">
       <AlertCircle size={24} />
-      <p>Failed to fetch product data. Please ensure you are logged in as an Administrator.</p>
+      <p>Failed to fetch data. Please check your admin login.</p>
       <button onClick={() => refetch()} className="underline ml-auto">Try again</button>
     </div>
   );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Header Halaman */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -54,16 +54,11 @@ const AdminProductPage = () => {
           </h1>
           <p className="text-gray-400 text-sm">Kelola katalog produk dan stok barang Anda</p>
         </div>
-        
-        <Link 
-          to="create" 
-          className="bg-[#febd69] hover:bg-[#f3a847] text-black px-6 py-2.5 rounded-lg flex items-center justify-center gap-2 font-bold transition-all shadow-lg shadow-yellow-500/10"
-        >
+        <Link to="create" className="bg-[#febd69] hover:bg-[#f3a847] text-black px-6 py-2.5 rounded-lg flex items-center justify-center gap-2 font-bold transition-all shadow-lg shadow-yellow-500/10">
           <Plus size={20} /> Add new Product
         </Link>
       </div>
 
-      {/* Bar Pencarian & Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="lg:col-span-3 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -74,12 +69,8 @@ const AdminProductPage = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          {/* Tombol Clear Search (X) */}
           {searchTerm && (
-            <button 
-              onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white p-1"
-            >
+            <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white p-1">
               <X size={18} />
             </button>
           )}
@@ -91,17 +82,15 @@ const AdminProductPage = () => {
         </div>
       </div>
 
-      {/* Tabel Produk */}
       <div className="bg-gray-800 border border-gray-700 rounded-2xl overflow-hidden shadow-xl">
         {filteredProducts.length > 0 ? (
           <>
-          <ProductTable 
-            products={filteredProducts} 
-            onDelete={handleDelete}
-            isDeleting={isDeleting}
-            searchTerm={searchTerm}
-          />
-          {/* TAMBAHKAN PAGINATION UNTUK ADMIN */}
+            <ProductTable 
+              products={filteredProducts} 
+              onDelete={handleDelete}
+              isDeleting={isDeleting} // Variabel ini dilempar ke tabel
+              searchTerm={searchTerm}
+            />
             <div className="p-6 border-t border-gray-700 flex justify-center">
               <Pagination 
                 currentPage={page}
@@ -114,7 +103,6 @@ const AdminProductPage = () => {
           <div className="p-20 text-center text-gray-500">
             <Search size={48} className="mx-auto mb-4 opacity-20" />
             <p className="text-lg">No products found</p>
-            <p className="text-sm">Try a different keyword or add a new product</p>
           </div>
         )}
       </div>
