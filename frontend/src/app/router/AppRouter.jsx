@@ -152,9 +152,7 @@ const router = createBrowserRouter([
     ]
   },
   { path: '*', element: <NotFoundPage /> }
-], {
-   basename: "/" 
-});
+]);
 
 const AppRouter = () => (
   <Suspense fallback={<LoadingState message="Connecting to Amazon AWS..." />}>
@@ -163,3 +161,4 @@ const AppRouter = () => (
 );
 
 export default AppRouter;
+
