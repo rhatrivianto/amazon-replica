@@ -3,11 +3,11 @@ import { apiSlice } from './apiSlice.js';
 
 export const sellerApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Mengambil inventori (tambahkan params untuk search/pagination)
+    // Tambahkan params agar mendukung pagination (?page=1&limit=12)
     getMyInventory: builder.query({
       query: (params) => ({
         url: '/seller/inventory',
-        params, 
+        params: params, // Ini krusial untuk pagination di halaman Seller
       }),
       providesTags: ['Products'],
     }),
@@ -23,7 +23,7 @@ export const sellerApi = apiSlice.injectEndpoints({
 
     updateMyProduct: builder.mutation({
       query: ({ id, formData }) => ({
-        url: `/seller/products/${id}`, // Pastikan plural 'products'
+        url: `/seller/products/${id}`, 
         method: 'PATCH',
         body: formData,
       }),

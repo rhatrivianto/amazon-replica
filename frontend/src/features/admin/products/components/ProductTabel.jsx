@@ -1,33 +1,30 @@
-
-import { Edit, Trash2, Package, ChevronRight } from 'lucide-react';
+import { Edit, Trash2, Package, ChevronRight, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Komponen Helper untuk Highlight (Amazon Style)
-  const HighlightText = ({ text, highlight }) => {
-    if (!highlight.trim()) return <span>{text}</span>;
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
-    return (
-      <span>
-        {parts.map((part, i) => 
-          part.toLowerCase() === highlight.toLowerCase() ? (
-            <mark key={i} className="bg-yellow-500/30 text-yellow-200 rounded-sm px-0.5">{part}</mark>
-          ) : (
-            <span key={i}>{part}</span>
-          )
-        )}
-      </span>
-    );
-  };
+const HighlightText = ({ text, highlight }) => {
+  if (!highlight.trim()) return <span>{text}</span>;
+  const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+  return (
+    <span>
+      {parts.map((part, i) => 
+        part.toLowerCase() === highlight.toLowerCase() ? (
+          <mark key={i} className="bg-yellow-500/30 text-yellow-200 rounded-sm px-0.5">{part}</mark>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </span>
+  );
+};
 
-
-const ProductTable = ({ products, onDelete, searchTerm }) => {
+const ProductTable = ({ products, onDelete, searchTerm, isDeleting }) => {
   const navigate = useNavigate();
 
   // Amazon Style Helper: Mempercantik tampilan kategori BTG
   const renderCategoryPath = (category) => {
     if (!category) return <span className="text-gray-600 italic">Uncategorized</span>;
     
-    // Jika data category dari backend sudah menyertakan populated parent
     if (typeof category === 'object' && category.parent) {
       return (
         <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider">
@@ -76,7 +73,6 @@ const ProductTable = ({ products, onDelete, searchTerm }) => {
                   </div>
                   <div>
                     <div className="text-white font-medium text-sm line-clamp-1">
-                      {/* 2. GUNAKAN HIGHLIGHT DI SINI */}
                       <HighlightText text={product.name} highlight={searchTerm} />
                     </div>
                     <div className="text-[10px] text-gray-500 font-mono tracking-tighter uppercase">
@@ -103,11 +99,19 @@ const ProductTable = ({ products, onDelete, searchTerm }) => {
               </td>
               <td className="p-4 text-center">
                 <div className="flex justify-center gap-1">
-                  <button onClick={() => navigate(`edit/${product._id}`)} className="p-2 text-gray-400 hover:text-[#ffd814] hover:bg-gray-700 rounded-md transition-all">
+                  <button 
+                    onClick={() => navigate(`edit/${product._id}`)} 
+                    disabled={isDeleting}
+                    className="p-2 text-gray-400 hover:text-[#ffd814] hover:bg-gray-700 rounded-md transition-all disabled:opacity-30"
+                  >
                     <Edit size={16} />
                   </button>
-                  <button onClick={() => onDelete(product._id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all">
-                    <Trash2 size={16} />
+                  <button 
+                    onClick={() => onDelete(product._id)} 
+                    disabled={isDeleting}
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all disabled:opacity-30"
+                  >
+                    {isDeleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                   </button>
                 </div>
               </td>
