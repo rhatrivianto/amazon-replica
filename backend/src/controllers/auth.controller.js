@@ -80,7 +80,7 @@ export const register = async (req, res) => {
       message: 'Verification email has been sended to Mailtrap.'
       });
     } catch (emailError) {
-      console.error("❌ Failde to send a verification email:", emailError.message);
+      console.error("❌ Failed to send a verification email:", emailError.message);
       // Tetap return sukses karena user sudah terbuat di DB
       res.status(201).json({
         success: true,

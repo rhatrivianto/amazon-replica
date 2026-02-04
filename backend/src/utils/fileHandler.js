@@ -7,7 +7,7 @@ export const deleteFile = (fileName) => {
   // fs.unlink bertugas menghapus file secara fisik
   fs.unlink(filePath, (err) => {
     if (err) {
-      console.log(`Failde to delete the old file: ${fileName} (Mungkin file sudah tidak ada)`);
+      console.log(`Failed to delete the old file: ${fileName} (Mungkin file sudah tidak ada)`);
     } else {
       console.log(`✅ File lama berhasil dihapus: ${fileName}`);
     }
