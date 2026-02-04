@@ -98,7 +98,6 @@ const AdminProductPage = () => {
           <ProductTable 
             products={filteredProducts} 
             onDelete={handleDelete}
-            isDeleting={isDeleting}
             searchTerm={searchTerm}
           />
           {/* TAMBAHKAN PAGINATION UNTUK ADMIN */}
