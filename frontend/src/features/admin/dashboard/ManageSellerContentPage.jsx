@@ -147,7 +147,7 @@ const ManageSellerContentPage = () => {
                 className="text-gray-400 hover:text-red-500 p-2 transition-colors"
                 title="Delete"
               >
-                <Trash2 size={18} />
+                {isDeleting ? <Loader2 className="animate-spin" size={18} /> :<Trash2 size={18} />}
               </button>
             </div>
           ))}

@@ -16,7 +16,7 @@ export const useAdminAuth = () => {
       // Panggil API logout jika diperlukan
       await logoutApi().unwrap();
     } catch (error) {
-       toast.error("Failde to logout:", error || "Terjadi kesalahan tak terduga")
+       toast.error("Failed to logout:", error || "Terjadi kesalahan tak terduga")
     } finally {
       localStorage.removeItem('adminToken');
       toast.success("Berhasil keluar dari Dashboard");

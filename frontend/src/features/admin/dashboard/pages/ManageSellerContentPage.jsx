@@ -29,7 +29,7 @@ const ManageSellerContentPage = () => {
       toast.success('Content added successfully!');
       setFormData({ title: '', subtitle: '', description: '', iconKey: 'globe', section: 'guides', imageUrl: '', linkUrl: '' });
     } catch {
-      toast.error('Failde to add content');
+      toast.error('Failed to add content');
     }
   };
 
@@ -184,7 +184,7 @@ const ManageSellerContentPage = () => {
                 className="text-gray-400 hover:text-red-500 p-2 transition-colors"
                 title="Hapus"
               >
-                <Trash2 size={18} />
+               {isDeleting ? <Loader2 className="animate-spin" size={18} /> :  <Trash2 size={18} />}
               </button>
             </div>
           ))}
