@@ -6,9 +6,8 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: './',
+  base: '/', // Gunakan slash saja, bukan titik slash
   build: {
     outDir: 'dist',
-    sourcemap: false
   }
 })
