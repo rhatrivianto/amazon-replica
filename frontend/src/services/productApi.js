@@ -12,6 +12,15 @@ export const productApi = apiSlice.injectEndpoints({
       providesTags: ['Products'],
     }),
     
+    // TAMBAHKAN INI: Endpoint untuk Search Suggestions
+    getSuggestions: builder.query({
+      query: (keyword) => ({
+        url: '/products/suggestions',
+        params: { q: keyword },
+      }),
+      // Kita tidak perlu provideTags karena data ini sangat sementara (transient)
+    }),
+
     // Pembeli melihat detail satu produk
     getProductById: builder.query({
       query: (id) => `/products/${id}`,
@@ -22,5 +31,6 @@ export const productApi = apiSlice.injectEndpoints({
 
 export const { 
   useGetProductsQuery, 
-  useGetProductByIdQuery 
+  useGetProductByIdQuery,
+  useGetSuggestionsQuery 
 } = productApi;

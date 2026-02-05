@@ -19,6 +19,11 @@ const ProductGrid = ({ onOpenAuth, categoryId, searchQuery }) => {
     setPage(1);
   }, [categoryId]);
   
+// Tambahkan useEffect ini di ProductGrid.jsx
+useEffect(() => {
+  setPage(1); // Reset ke halaman 1 setiap kali user mencari kata kunci baru
+}, [searchQuery]);
+
   const limit = 12; // Kita simpan limit dalam variabel agar bisa dipakai untuk hitungan
   // 1. Persiapkan parameter query yang bersih (hapus null/undefined)
   const queryParams = {

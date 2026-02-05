@@ -10,8 +10,8 @@ import Category from '../models/category.model.js';
 const getCategoryWithDescendants = async (identifier) => {
   // 1. Find the root category (by ID, Slug, or Name)
   const query = mongoose.isValidObjectId(identifier) 
-    ? { _id: identifier } 
-    : { $or: [{ slug: identifier }, { name: identifier }] };
+? { _id: identifier } 
+  : { $or: [{ slug: identifier }, { name: { $regex: `^${identifier}$`, $options: 'i' } }] };
 
   const rootCategory = await Category.findOne(query);
   if (!rootCategory) return null;
@@ -70,6 +70,18 @@ export const getProducts = asyncHandler(async (req, res) => {
   });
 });
 
+export const getSuggestions = asyncHandler(async (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.json({ status: 'success', data: [] });
+
+  // Panggil dari service
+  const suggestions = await productService.getSuggestions(q);
+
+  res.status(200).json({ 
+    status: 'success', 
+    data: suggestions 
+  });
+});
 /**
  * @desc    Ambil satu produk berdasarkan ID
  */

@@ -8,8 +8,10 @@ import { upload } from '../middlewares/upload.middleware.js'; // Impor dari file
 const router = express.Router();
 
 // Rute Publik (Jika ada)
+router.get('/suggestions', productController.getSuggestions);
 router.get('/', productController.getProducts);
 router.get('/:id', productController.getProductById);
+
 
 // Proteksi Admin
 router.use(protect, restrictTo('admin'));

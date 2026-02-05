@@ -6,27 +6,23 @@ import slugify from 'slugify';
 import { nanoid } from 'nanoid'; // Opsional: untuk generate ASIN jika tidak diinput manual
 
 // 1. Ambil Semua Produk (Logic Search & Filter Amazon)
+// backend/src/services/product.service.js
+
 export const getAllProducts = async (filters) => {
   const { search, category, sort, minPrice, maxPrice, page, limit, seller } = filters;
   
-  // PENEMPATAN LOGIKA AKTIF:
-  // Secara default, query hanya mengambil yang statusnya active (jika Anda punya field status)
-  // Atau setidaknya filter yang stoknya > 0 jika ingin gaya Amazon yang ketat.
-  let queryObj = { isDeleted: { $ne: true } }; // Contoh: Jangan ambil yang sudah dihapus
+  let queryObj = { isDeleted: { $ne: true } };
 
+  // PERBAIKAN: Gunakan Regex agar pencarian lebih fleksibel
   if (search) {
-    queryObj.$text = { $search: search };
+    queryObj.$or = [
+      { name: { $regex: search, $options: 'i' } },
+      { tags: { $regex: search, $options: 'i' } }
+    ];
   }
 
-  if (category && category !== 'all') queryObj.category = category;
-  
-  // Jika ini dipanggil oleh User Publik, jangan biarkan mereka melihat produk draft
-  // Tambahkan baris ini:
-  // queryObj.status = 'published'; 
-
-  if (seller) queryObj.seller = seller; category;
-  
-  // Filter by Seller (Untuk Inventory Dashboard)
+  // Perbaikan typo: baris 'if (seller) queryObj.seller = seller; category;' di kode Anda
+  if (category) queryObj.category = category;
   if (seller) queryObj.seller = seller;
 
   if (!isNaN(minPrice) || !isNaN(maxPrice)) {
@@ -36,8 +32,6 @@ export const getAllProducts = async (filters) => {
   }
 
   const skip = (page - 1) * limit;
-  
-  // Amazon Sort Style: Default terbaru
   const sortBy = sort || '-createdAt';
 
   const products = await Product.find(queryObj)
@@ -57,3 +51,12 @@ export const getProductById = async (id) => {
   return product;
 };
 
+export const getSuggestions = async (searchTerm) => {
+  return await Product.find({ 
+    name: { $regex: searchTerm, $options: 'i' },
+    isDeleted: { $ne: true }
+  })
+  .select('name') 
+  .limit(8)
+  .lean(); // .lean() untuk performa lebih cepat
+};

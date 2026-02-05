@@ -14,6 +14,14 @@ export const brandApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Brands'],
     }),
+    updateBrand: builder.mutation({
+      query: ({ id, ...updateData }) => ({
+        url: `/brands/${id}`,
+        method: 'PATCH',
+        body: updateData,
+      }),
+      invalidatesTags: ['Brands'],
+    }),
     deleteBrand: builder.mutation({
       query: (id) => ({
         url: `/brands/${id}`,
@@ -27,5 +35,6 @@ export const brandApi = apiSlice.injectEndpoints({
 export const { 
   useGetBrandsQuery, 
   useCreateBrandMutation, 
-  useDeleteBrandMutation 
+  useDeleteBrandMutation,
+  useUpdateBrandMutation
 } = brandApi;
