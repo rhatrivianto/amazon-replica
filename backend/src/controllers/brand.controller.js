@@ -1,6 +1,6 @@
 import * as brandService from '../services/brand.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import AppError from '../utils/appError.js';
+import AppError from '../utils/AppError.js';
 
 export const getBrands = asyncHandler(async (req, res) => {
     const brands = await brandService.getAllBrands();
