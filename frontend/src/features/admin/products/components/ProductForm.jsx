@@ -15,39 +15,46 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
   const { data: brands } = useGetBrandsQuery();
 
   const handleLocalSubmit = (e) => {
-    e.preventDefault();
-    const form = e.target;
-    
-    // Gunakan FormData karena ada Upload Gambar & Data Kompleks
-    const formData = new FormData();
-    formData.append('name', form.name.value);
-    formData.append('price', form.price.value);
-    formData.append('stock', form.stock.value);
-    formData.append('category', form.category.value);
-    formData.append('brand', form.brand.value);
-    formData.append('description', form.description.value);
-    formData.append('asin', form.asin?.value || '');
-    formData.append('modelNumber', form.modelNumber?.value || '');
-    formData.append('discountPercentage', form.discountPercentage?.value || 0);
-    formData.append('isPrime', form.isPrime?.checked || false);
-    formData.append('isSmallBusiness', form.isSmallBusiness?.checked || false);
-    
-    // Mengirim Object/Array sebagai JSON string (Akan di-parse di Backend)
-    formData.append('specifications', JSON.stringify(specifications));
-    formData.append('bulletPoints', JSON.stringify(bulletPoints));
-    
-    // Tambahkan pengiriman shippingInfo dasar ala Amazon
-    formData.append('shippingInfo', JSON.stringify({
-      soldBy: form.brand.options[form.brand.selectedIndex].text,
-      shipsFrom: 'Amazon Global Store',
-      weight: form.weight?.value || '',
-      dimensions: form.dimensions?.value || ''
-    }));
+  e.preventDefault();
+  const form = e.target;
+  const formData = new FormData();
 
-    images.forEach((img) => formData.append('images', img));
-    
-    onSubmit(formData);
+  // 1. Basic Fields (Pastikan Nama Key Sama dengan Model)
+  formData.append('name', form.name.value);
+  formData.append('description', form.description.value);
+  formData.append('price', Number(form.price.value)); // Konversi ke Number
+  formData.append('stock', Number(form.stock.value)); // Konversi ke Number
+  formData.append('category', form.category.value);
+  formData.append('brand', form.brand.value);
+  
+  // 2. Identitas Amazon
+  formData.append('asin', form.asin?.value || '');
+  formData.append('modelNumber', form.modelNumber?.value || '');
+  formData.append('discountPercentage', Number(form.discountPercentage?.value || 0));
+  formData.append('isPrime', form.isPrime?.checked || false);
+  formData.append('isSmallBusiness', form.isSmallBusiness?.checked || false);
+  
+  // 3. Complex Objects (Stringify untuk Multer compatibility)
+  formData.append('specifications', JSON.stringify(specifications));
+  formData.append('bulletPoints', JSON.stringify(bulletPoints));
+  
+  // 4. Shipping Info (Struktur harus sama dengan Model)
+  const shippingData = {
+    weight: form.weight?.value || '0 kg',
+    dimensions: form.dimensions?.value || '0x0x0 cm',
+    shipsFrom: 'Amazon Global Store',
+    // Ambil teks dari select brand sebagai 'soldBy'
+    soldBy: form.brand.options[form.brand.selectedIndex].text 
   };
+  formData.append('shippingInfo', JSON.stringify(shippingData));
+
+  // 5. Images
+  if (images.length > 0) {
+    images.forEach((img) => formData.append('images', img));
+  }
+  
+  onSubmit(formData);
+};
 
   return (
     <form onSubmit={handleLocalSubmit} className="space-y-8 text-white bg-gray-800/50 p-6 rounded-2xl border border-gray-700">

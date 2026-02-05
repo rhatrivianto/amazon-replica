@@ -22,10 +22,32 @@ export const getMyInventory = asyncHandler(async (req, res) => {
     data: inventory.products
   });
 });
-
 export const createSellerProduct = asyncHandler(async (req, res) => {
-  // Logic ASIN & Slug otomatis diproses di service
-  const newProduct = await sellerService.createProduct(req.body, req.user.id);
+  // 1. Salin body
+  let productData = { ...req.body };
+
+  // 2. Parse field yang dikirim sebagai JSON string dari FormData
+  if (typeof productData.specifications === 'string') {
+    productData.specifications = JSON.parse(productData.specifications);
+  }
+  if (typeof productData.bulletPoints === 'string') {
+    productData.bulletPoints = JSON.parse(productData.bulletPoints);
+  }
+  if (typeof productData.shippingInfo === 'string') {
+    productData.shippingInfo = JSON.parse(productData.shippingInfo);
+  }
+
+  // 3. Pastikan Tipe Data Angka
+  productData.price = Number(productData.price);
+  productData.stock = Number(productData.stock);
+
+  // 4. Proses File Gambar (jika menggunakan Cloudinary/Multer)
+  if (req.files && req.files.length > 0) {
+    productData.images = req.files.map(file => file.path); // Sesuai setup upload Anda
+  }
+
+  // 5. Panggil Service
+  const newProduct = await sellerService.createProduct(productData, req.user.id);
 
   res.status(201).json({ 
     status: 'success', 
