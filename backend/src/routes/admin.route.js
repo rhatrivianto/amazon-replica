@@ -7,18 +7,19 @@ import { upload, parseFormDataJSON } from '../middlewares/upload.middleware.js';
 
 const router = express.Router();
 
-// Rute Publik
+// 1. RUTE TERBUKA (Agar Dashboard Admin bisa loading data produk)
 router.get('/suggestions', productController.getSuggestions);
 router.get('/', productController.getProducts);
 router.get('/:id', productController.getProductById);
 
-// Proteksi Admin
+// 2. PROTEKSI (Hanya untuk rute yang MEMODIFIKASI data)
+// Jika Login Gagal, pastikan rute login Anda TIDAK ada di file ini.
 router.use(protect, restrictTo('admin'));
 
 router.post(
   '/', 
   upload.array('images', 5), 
-  parseFormDataJSON,           // <--- Mengubah string ke Object sebelum divalidasi
+  parseFormDataJSON, 
   validate(createProductSchema), 
   productController.createProduct
 );
@@ -26,7 +27,7 @@ router.post(
 router.patch(
   '/:id', 
   upload.array('images', 5), 
-  parseFormDataJSON,           // <--- Sama untuk update
+  parseFormDataJSON, 
   validate(updateProductSchema), 
   productController.updateProduct
 );
