@@ -131,46 +131,27 @@ const parseJsonFields = (body) => {
   });
 };
 
-export const createProduct = asyncHandler(async (req, res) => {
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).json({ status: 'error', message: 'Images are required' });
-  }
-
-  // 1. Parse JSON dari Form-Data
-  parseJsonFields(req.body);
-
-  // 2. Parallel Upload to Cloudinary
-  const uploadPromises = req.files.map((file) => {
-    return new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { folder: 'amazon-clone/products' },
-        (error, result) => {
-          if (result) resolve(result.secure_url);
-          else reject(error);
+// Di Backend (Product Controller)
+export const createProduct = async (req, res) => {
+    try {
+        // Trik Amazon: Parse kembali string JSON dari FormData
+        if (typeof req.body.shippingInfo === 'string') {
+            req.body.shippingInfo = JSON.parse(req.body.shippingInfo);
         }
-      );
-      streamifier.createReadStream(file.buffer).pipe(stream);
-    });
-  });
+        if (typeof req.body.specifications === 'string') {
+            req.body.specifications = JSON.parse(req.body.specifications);
+        }
+        if (typeof req.body.bulletPoints === 'string') {
+            req.body.bulletPoints = JSON.parse(req.body.bulletPoints);
+        }
 
-  req.body.images = await Promise.all(uploadPromises);
-
-  // --- AMAZON STYLE: Link Product to Seller ---
-  // Otomatis set seller ID dari user yang login
-  req.body.seller = req.user._id;
-
-  // Otomatis set "Sold By" dengan nama toko seller
-  if (req.user.storeName) {
-    req.body.shippingInfo = req.body.shippingInfo || {};
-    req.body.shippingInfo.soldBy = req.user.storeName;
-  }
-
-  // 3. Save to DB
-  const product = await productService.createProduct(req.body);
-
-  res.status(201).json({ status: 'success', data: product });
-});
-
+        // Lanjutkan ke validasi dan penyimpanan...
+        const newProduct = await Product.create(req.body);
+        res.status(201).json({ success: true, data: newProduct });
+    } catch (error) {
+        res.status(400).json({ status: 400, data: error.message });
+    }
+};
 export const updateProduct = asyncHandler(async (req, res) => {
   parseJsonFields(req.body);
 

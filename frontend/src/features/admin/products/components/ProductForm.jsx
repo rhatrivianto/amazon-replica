@@ -17,6 +17,7 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
   const handleLocalSubmit = (e) => {
   e.preventDefault();
   const form = e.target;
+
   
   // GUNAKAN OBJECT BIASA jika tidak ada upload gambar
   // TAPI karena Anda ada ImagePreview, kita tetap pakai FormData dengan trik ini:
