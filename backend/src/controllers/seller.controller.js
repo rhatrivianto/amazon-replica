@@ -1,8 +1,8 @@
+import Product from '../models/product.model.js';
 import * as sellerService from '../services/seller.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const getMyInventory = asyncHandler(async (req, res) => {
-  // Mendukung query params untuk dashboard yang lebih advanced
   const filters = {
     search: req.query.search,
     page: parseInt(req.query.page) || 1,
@@ -22,27 +22,22 @@ export const getMyInventory = asyncHandler(async (req, res) => {
     data: inventory.products
   });
 });
-export const createSellerProduct = async (req, res, next) => {
-  try {
-    // Tambahkan seller ID dari user yang login
-    const productData = {
-      ...req.body,
-      seller: req.user._id 
-    };
 
-    const product = await Product.create(productData);
+export const createSellerProduct = asyncHandler(async (req, res) => {
+  const productData = {
+    ...req.body,
+    seller: req.user._id 
+  };
 
-    res.status(201).json({
-      status: 'success',
-      data: product
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  const product = await Product.create(productData);
+
+  res.status(201).json({
+    status: 'success',
+    data: product
+  });
+});
 
 export const updateSellerProduct = asyncHandler(async (req, res) => {
-  // Kirim req.user.id dan role untuk validasi kepemilikan
   const updatedProduct = await sellerService.updateProduct(
     req.params.id, 
     req.body, 

@@ -2,22 +2,16 @@ import { env } from './env.js';
 
 export const corsOptions = {
   origin: (origin, callback) => {
-    // 1. Izinkan request tanpa origin (seperti Postman, Mobile Apps, atau Server-to-Server)
+    // 1. Izinkan request tanpa origin (Postman, Mobile, dll)
     if (!origin) return callback(null, true);
 
-    // 2. Ambil Client URL dari env dengan aman (Handle jika undefined)
-    // PENTING: Jika env.clientUrl kosong, gunakan string kosong agar tidak error saat .replace()
     const clientUrl = env.clientUrl || "";
     let normalizedClientUrl = clientUrl.replace(/\/$/, '');
 
-    // FIX OTOMATIS: Jika env.clientUrl tidak pakai https://, kita tambahkan manual
-    // Karena browser mengirim header Origin SELALU dengan protokol (https://...)
     if (normalizedClientUrl && !normalizedClientUrl.startsWith('http')) {
       normalizedClientUrl = `https://${normalizedClientUrl}`;
     }
 
-    // 3. Daftar Origin yang Diizinkan (Whitelist)
-    // Kita tambahkan localhost secara eksplisit agar Anda bisa testing local -> prod
     const allowedOrigins = [
       normalizedClientUrl,
       'http://localhost:5173',
@@ -25,13 +19,14 @@ export const corsOptions = {
       'http://localhost:5000'
     ];
 
-    if (allowedOrigins.includes(origin)) {
+    // LOGIKA DINAMIS: Izinkan jika ada di list ATAU berasal dari domain vercel.app milik Anda
+    const isAllowedVercel = origin.endsWith('.vercel.app') && origin.includes('rully-hatriviantos-projects');
+
+    if (allowedOrigins.includes(origin) || isAllowedVercel) {
       callback(null, true);
     } else {
-      // LOGGING DETAIL: Cek tab "Logs" di Railway untuk melihat nilai asli yang diterima server
       console.error(`🚫 [CORS ERROR] Origin '${origin}' ditolak.`);
-      console.error(`ℹ️ [DEBUG] CLIENT_URL di Server terbaca: '${clientUrl}'`);
-      console.error(`✅ [ALLOWED LIST] ${JSON.stringify(allowedOrigins)}`);
+      console.error(`✅ [DEBUG] Hanya mengizinkan: ${JSON.stringify(allowedOrigins)} dan subdomain Vercel Anda.`);
       callback(new Error('Not allowed by CORS'));
     }
   },
