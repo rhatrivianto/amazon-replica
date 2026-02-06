@@ -2,31 +2,31 @@ import { env } from './env.js';
 
 export const corsOptions = {
   origin: (origin, callback) => {
-    // 1. Izinkan request tanpa origin (Postman, Mobile, dll)
+    // 1. Izinkan request tanpa origin (seperti Postman atau mobile)
     if (!origin) return callback(null, true);
 
     const clientUrl = env.clientUrl || "";
     let normalizedClientUrl = clientUrl.replace(/\/$/, '');
-
     if (normalizedClientUrl && !normalizedClientUrl.startsWith('http')) {
       normalizedClientUrl = `https://${normalizedClientUrl}`;
     }
 
     const allowedOrigins = [
       normalizedClientUrl,
+      'https://amazon-replica-n713.vercel.app', // Domain Utama Anda
       'http://localhost:5173',
-      'http://localhost:3000',
-      'http://localhost:5000'
+      'http://localhost:3000'
     ];
 
-    // LOGIKA DINAMIS: Izinkan jika ada di list ATAU berasal dari domain vercel.app milik Anda
-    const isAllowedVercel = origin.endsWith('.vercel.app') && origin.includes('rully-hatriviantos-projects');
+    // 2. LOGIKA AMAZON STYLE: Izinkan semua subdomain Vercel milik proyek Anda
+    // Ini mencakup URL panjang yang tadi muncul di error log
+    const vercelPreviewPattern = /^https:\/\/amazon-replica-n713-.*-rully-hatriviantos-projects\.vercel\.app$/;
+    const isVercelPreview = vercelPreviewPattern.test(origin);
 
-    if (allowedOrigins.includes(origin) || isAllowedVercel) {
+    if (allowedOrigins.includes(origin) || isVercelPreview || origin.endsWith('.vercel.app')) {
       callback(null, true);
     } else {
       console.error(`🚫 [CORS ERROR] Origin '${origin}' ditolak.`);
-      console.error(`✅ [DEBUG] Hanya mengizinkan: ${JSON.stringify(allowedOrigins)} dan subdomain Vercel Anda.`);
       callback(new Error('Not allowed by CORS'));
     }
   },
