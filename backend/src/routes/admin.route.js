@@ -1,20 +1,36 @@
 import express from 'express';
-import * as adminController from '../controllers/admin.controller.js';
+import { validate } from '../middlewares/validation.middleware.js';
+import { createProductSchema, updateProductSchema } from '../validators/product.validator.js';
+import * as productController from '../controllers/product.controller.js';
 import { protect, restrictTo } from '../middlewares/auth.middleware.js';
+import { upload, parseFormDataJSON } from '../middlewares/upload.middleware.js';
 
 const router = express.Router();
 
-// 1. RUTE PUBLIK (Bisa diakses tanpa token)
-// Harus di atas router.use(protect)
-router.post('/login', adminController.loginAdmin); 
+// Rute Publik
+router.get('/suggestions', productController.getSuggestions);
+router.get('/', productController.getProducts);
+router.get('/:id', productController.getProductById);
 
-// 2. PROTEKSI (Mulai dari sini ke bawah butuh token & role admin)
+// Proteksi Admin
 router.use(protect, restrictTo('admin'));
 
-// 3. RUTE PRIVATE ADMIN
-router.get('/dashboard', adminController.getDashboardStats);
-router.get('/stats', adminController.getStats);
-router.get('/db-health', adminController.getDatabaseHealth);
-router.post('/db-backup', adminController.runBackup);
+router.post(
+  '/', 
+  upload.array('images', 5), 
+  parseFormDataJSON,           // <--- Mengubah string ke Object sebelum divalidasi
+  validate(createProductSchema), 
+  productController.createProduct
+);
+
+router.patch(
+  '/:id', 
+  upload.array('images', 5), 
+  parseFormDataJSON,           // <--- Sama untuk update
+  validate(updateProductSchema), 
+  productController.updateProduct
+);
+
+router.delete('/:id', productController.deleteProduct);
 
 export default router;
