@@ -7,13 +7,22 @@ import multer from 'multer';
  */
 const storage = multer.memoryStorage();
 
+// backend/src/middlewares/upload.middleware.js
+
 const fileFilter = (req, file, cb) => {
-    // Validasi tipe file secara ketat
-    if (file.mimetype.startsWith('image/')) {
-        cb(null, true);
-    } else {
-        cb(new Error('Invalid file type. Only images are allowed.'), false);
-    }
+  // Izinkan tipe file gambar yang umum
+  const allowedTypes = /jpeg|jpg|png|webp|gif/;
+  const mimetype = allowedTypes.test(file.mimetype);
+  
+  // Juga cek ekstensi filenya
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+
+  if (mimetype && extname) {
+    return cb(null, true);
+  }
+  
+  // Jika gagal, berikan pesan error yang jelas
+  cb(new Error('Invalid file type. Only images (JPG, PNG, WEBP, GIF) are allowed.'));
 };
 
 export const upload = multer({
