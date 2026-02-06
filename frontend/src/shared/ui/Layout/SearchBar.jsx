@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'; // Tambah useRef
 import { Search, Clock } from 'lucide-react'; // Clock untuk history (opsional)
 import { useNavigate } from 'react-router-dom';
 import { useGetCategoriesQuery } from '../../../services/categoryApi.js';
-import { useGetProductsQuery } from '../../../services/productApi.js'; // Gunakan api produk
+import { useGetProductsQuery, useGetSuggestionsQuery } from '../../../services/productApi.js'; // Gunakan api produk
 
 const SearchBar = () => {
   const [keyword, setKeyword] = useState('');
