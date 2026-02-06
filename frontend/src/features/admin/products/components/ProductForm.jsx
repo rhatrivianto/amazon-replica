@@ -17,45 +17,47 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
   const handleLocalSubmit = (e) => {
   e.preventDefault();
   const form = e.target;
+  
+  // GUNAKAN OBJECT BIASA jika tidak ada upload gambar
+  // TAPI karena Anda ada ImagePreview, kita tetap pakai FormData dengan trik ini:
   const formData = new FormData();
 
-  // 1. Basic Fields (Pastikan Nama Key Sama dengan Model)
   formData.append('name', form.name.value);
   formData.append('description', form.description.value);
-  formData.append('price', Number(form.price.value)); // Konversi ke Number
-  formData.append('stock', Number(form.stock.value)); // Konversi ke Number
+  formData.append('price', Number(form.price.value));
+  formData.append('stock', Number(form.stock.value));
   formData.append('category', form.category.value);
   formData.append('brand', form.brand.value);
   
-  // 2. Identitas Amazon
+  // Field Tambahan
   formData.append('asin', form.asin?.value || '');
   formData.append('modelNumber', form.modelNumber?.value || '');
   formData.append('discountPercentage', Number(form.discountPercentage?.value || 0));
-  formData.append('isPrime', form.isPrime?.checked || false);
-  formData.append('isSmallBusiness', form.isSmallBusiness?.checked || false);
+  formData.append('isPrime', form.isPrime.checked);
+  formData.append('isSmallBusiness', form.isSmallBusiness.checked);
   
-  // 3. Complex Objects (Stringify untuk Multer compatibility)
+  // PENTING: Untuk Array/Object di FormData, pastikan Backend Anda (Multer) 
+  // sudah dikonfigurasi untuk mem-parse JSON.stringify, 
+  // ATAU kirim satu per satu.
   formData.append('specifications', JSON.stringify(specifications));
   formData.append('bulletPoints', JSON.stringify(bulletPoints));
-  
-  // 4. Shipping Info (Struktur harus sama dengan Model)
+
+  // PERBAIKAN SHIPPING INFO
   const shippingData = {
     weight: form.weight?.value || '0 kg',
     dimensions: form.dimensions?.value || '0x0x0 cm',
     shipsFrom: 'Amazon Global Store',
-    // Ambil teks dari select brand sebagai 'soldBy'
     soldBy: form.brand.options[form.brand.selectedIndex].text 
   };
   formData.append('shippingInfo', JSON.stringify(shippingData));
 
-  // 5. Images
+  // Images
   if (images.length > 0) {
     images.forEach((img) => formData.append('images', img));
   }
   
   onSubmit(formData);
 };
-
   return (
     <form onSubmit={handleLocalSubmit} className="space-y-8 text-white bg-gray-800/50 p-6 rounded-2xl border border-gray-700">
       
