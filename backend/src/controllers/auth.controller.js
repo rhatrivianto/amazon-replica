@@ -210,7 +210,8 @@ if (!user || !(await user.comparePassword(password))) {
 }
 
 // 2. Proteksi Portal Admin (Pastikan Admin login di /admin/login)
-if (user.role === 'admin' && !req.originalUrl.includes('')) {
+// Jika URL tidak mengandung kata 'admin', berarti dia login di tempat user biasa -> TOLAK
+if (user.role === 'admin' && !req.originalUrl.includes('admin')) {
   return res.status(403).json({ success: false, message: 'Silakan gunakan portal login admin.' });
 }
 
