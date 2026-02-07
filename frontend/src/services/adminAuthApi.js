@@ -5,7 +5,7 @@ export const adminAuthApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     adminLogin: builder.mutation({
       query: (credentials) => ({
-        url: '/admin/login', // Konsisten dengan backend Anda
+        url: '/admin/login', // Pastikan ejaan benar (login bukan loogin)
         method: 'POST',
         body: credentials,
       }),

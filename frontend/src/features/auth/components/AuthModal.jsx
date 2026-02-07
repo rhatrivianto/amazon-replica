@@ -3,13 +3,14 @@ import { useDispatch } from 'react-redux';
 import { setUserCredentials } from '../../../features/auth/authSlice.js';
 import { useLoginMutation, useRegisterMutation } from '../../../services/authApi.js';
 import { toast } from 'react-hot-toast';
-import { X, Mail, Lock, User, ArrowRight, Loader2, Store } from 'lucide-react';
+import { X, Mail, Lock, User, ArrowRight, Loader2, Store, Eye, EyeOff } from 'lucide-react';
 
 const AuthModal = ({ isOpen, onClose, initialTab = 'signin', initialIsSeller = false }) => {
   const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [isSellerSignup, setIsSellerSignup] = useState(initialIsSeller);
   const [isWaitingVerify, setIsWaitingVerify] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '', storeName: '' });
 
   // Hook dari RTK Query
@@ -43,7 +44,7 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'signin', initialIsSeller = f
           user: userData.user, 
           token: userData.token 
         }));
-        toast.success(`Selamat datang kembali, ${userData.user.name}!`);
+        toast.success(`Wellcome back, ${userData.user.name}!`);
         onClose();
       } else {
         // Proses REGISTER
@@ -176,12 +177,19 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'signin', initialIsSeller = f
                 <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
                 <input
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   required
-                  className="w-full border border-gray-300 rounded-md py-2 pl-10 pr-4 focus:ring-1 focus:ring-[#e47911] focus:border-[#e47911] outline-none transition-all"
+                  className="w-full border border-gray-300 rounded-md py-2 pl-10 pr-10 focus:ring-1 focus:ring-[#e47911] focus:border-[#e47911] outline-none transition-all"
                   onChange={handleChange}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
               <button

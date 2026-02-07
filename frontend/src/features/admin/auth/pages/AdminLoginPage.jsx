@@ -17,7 +17,7 @@ const [email, setEmail] = useState('');
 
 const handleLogin = async (e) => {
     e.preventDefault();
-    const loadingToast = toast.loading('Memverifikasi kredensial Admin...');
+    const loadingToast = toast.loading('Verification Admin credential...');
 
     try {
       const result = await login({ email, password }).unwrap();
@@ -31,7 +31,7 @@ const handleLogin = async (e) => {
       toast.success(`Selamat datang, ${result.user.name}!`, { id: loadingToast });
       navigate('/admin/dashboard');
     } catch (err) {
-      toast.error(err.data?.message || "Kredensial Admin Salah", { id: loadingToast });
+      toast.error(err.data?.message || "Admin credetial verification failed", { id: loadingToast });
     }
   };
 

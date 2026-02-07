@@ -17,7 +17,7 @@ const [email, setEmail] = useState('');
 
 const handleLogin = async (e) => {
     e.preventDefault();
-    const loadingToast = toast.loading('Memverifikasi kredensial Admin...');
+    const loadingToast = toast.loading('verification admin credential...');
 
     try {
       const result = await login({ email, password }).unwrap();
@@ -28,11 +28,11 @@ const handleLogin = async (e) => {
         token: result.token 
       }));
       
-      toast.success(`Selamat datang, ${result.user.name}!`, { id: loadingToast });
+      toast.success(`Wellcome, ${result.user.name}!`, { id: loadingToast });
       navigate('/admin/dashboard');
     } catch (err) {
       // Handle jika error berupa string (misal: "jwt expired") atau object message
-      const errorMessage = err?.data?.message || (typeof err?.data === 'string' ? err.data : "Kredensial Admin Salah");
+      const errorMessage = err?.data?.message || (typeof err?.data === 'string' ? err.data : "Admin credential verification failed");
       toast.error(errorMessage, { id: loadingToast });
     }
   };

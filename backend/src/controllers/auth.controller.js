@@ -205,16 +205,23 @@ export const login = async (req, res) => {
 
 // 1. Cek Email & Password
 const user = await User.findOne({ email }).select('+password');
-if (!user || !(await user.comparePassword(password))) {
+    
+    // --- DEBUG: Cek kenapa login gagal ---
+    if (!user) {
+      console.log(`❌ [LOGIN FAIL] User tidak ditemukan: ${email}`);
+      return res.status(401).json({ success: false, message: 'Email atau password salah' });
+    }
+
+    if (!(await user.comparePassword(password))) {
+      console.log(`❌ [LOGIN FAIL] Password salah untuk: ${email}`);
   return res.status(401).json({ success: false, message: 'Email atau password salah' });
 }
 
-// 2. Proteksi Portal Admin (Pastikan Admin login di /admin/login)
-// Cek apakah request ditujukan ke endpoint admin ATAU dikirim dari halaman admin (Referer)
+// 2. Proteksi Portal Admin (Amazon Style Security)
+// Cek apakah request ditujukan ke endpoint admin ATAU dikirim dari halaman admin
 const isTargetingAdmin = req.originalUrl.includes('admin') || 
                          (req.headers.referer && req.headers.referer.includes('admin'));
 
-// Jika user adalah Admin, tapi tidak login lewat jalur Admin -> TOLAK
 if (user.role === 'admin' && !isTargetingAdmin) {
   return res.status(403).json({ success: false, message: 'Akun Admin harus login melalui Portal Admin.' });
 }
@@ -286,6 +293,8 @@ export const registerSeller = async (req, res) => {
       }
     });
   } catch (error) {
+    // --- DEBUG: Tampilkan error detail di terminal server ---
+    console.error("❌ LOGIN ERROR:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

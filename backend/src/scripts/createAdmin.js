@@ -1,10 +1,19 @@
 // backend/scripts/createAdmin.js
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import User from '../models/user.model.js';
-// ✅ Menggunakan konfigurasi dan koneksi DB terpusat
-import connectDB from '../config/db.js';
-import { auth} from '../config/admin.config.js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// 1. Load Environment Variables (PENTING: Sebelum import config lain)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '../../.env') });
+
+// 2. Import Modules setelah env loaded (Dynamic Import untuk menghindari masalah urutan loading)
+const { default: User } = await import('../models/user.model.js');
+const { default: connectDB } = await import('../config/db.js');
+const { auth } = await import('../config/admin.config.js');
 
 const createAdmin = async () => {
   try {

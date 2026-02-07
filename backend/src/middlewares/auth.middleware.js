@@ -15,7 +15,11 @@ export const protect = asyncHandler(async (req, res, next) => {
   }
 
   // 2. Cek jika token tidak ada
-  if (!token) return next(new AppError('Unauthorized. Please login.', 401));
+  if (!token) {
+    // --- DEBUG: Log URL yang diakses tanpa token ---
+    console.log(`⚠️ [AUTH ERROR] No token provided for: ${req.method} ${req.originalUrl}`);
+    return next(new AppError('Unauthorized. Please login.', 401));
+  }
 
   // 3. Verifikasi token (Membongkar segel digital)
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);

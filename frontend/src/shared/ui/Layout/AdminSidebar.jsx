@@ -64,7 +64,7 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-800 bg-[#131921]">
+        <div className="p-4 border-t border-gray-800 bg-[#131921] space-y-1">
           <Link to="/" className="flex items-center gap-3 px-4 py-2 text-sm text-[#febd69] hover:bg-[#232f3e] rounded-md transition-all">
             <Home size={18} />
             <span>← Back to Store</span>

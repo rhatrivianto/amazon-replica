@@ -1,14 +1,32 @@
 #!/bin/bash
-# Pindah ke folder tempat kode aplikasi berada
-cd /var/www/amazon-clone || exit 1 
-# Ambil update kode terbaru dari GitHub
-git pull origin main 
-# Install library/paket yang dibutuhkan aplikasi
-npm install --production 
-# TES: Periksa apakah file server.js ada error tulis/syntax. Jika error, stop script di sini!
-node --check server.js || { echo "❌ Error Syntax!"; exit 1; }
-# Jika tes di atas lulus, barulah restart aplikasi agar kode baru aktif
+# devops-scripts/deploy.sh
+
+# Pastikan script berhenti jika ada error
+set -e
+
+echo "------------------------------------------"
+echo "🚀 STARTING DEPLOYMENT"
+echo "------------------------------------------"
+
+# 1. Tarik update dari GitHub
+echo "📥 Step 1: Pulling latest changes..."
+git pull origin main
+
+# 2. Install Dependencies & Build Frontend
+# Menggunakan script 'build' di package.json root yang sudah mencakup:
+# - Install backend deps
+# - Install frontend deps
+# - Build frontend (Vite)
+echo "📦 Step 2: Installing dependencies & Building Frontend..."
+npm run build
+
+# 3. Restart Backend via PM2
+echo "🔄 Step 3: Restarting PM2..."
 pm2 restart amazon-backend
+
+echo "------------------------------------------"
+echo "✅ DEPLOYMENT SUCCESS!"
+echo "------------------------------------------"
 
 
 #!/bin/bash

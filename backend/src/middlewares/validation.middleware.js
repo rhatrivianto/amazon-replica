@@ -11,6 +11,20 @@ export const validate = (schema) => (req, res, next) => {
     req.body.image = req.file.originalname;
   }
 
+  // --- FIX: Parse JSON strings dari FormData ---
+  // Frontend mengirim object/array sebagai JSON string saat pakai FormData.
+  // Kita harus parse manual agar Joi membacanya sebagai Object/Array, bukan String.
+  const jsonFields = ['specifications', 'bulletPoints', 'shippingInfo'];
+  jsonFields.forEach(field => {
+    if (req.body[field] && typeof req.body[field] === 'string') {
+      try {
+        req.body[field] = JSON.parse(req.body[field]);
+      } catch (err) {
+        console.error(`⚠️ Gagal mem-parse field ${field}:`, err.message);
+      }
+    }
+  });
+
   const { error, value } = schema.validate(req.body, { 
     abortEarly: false, 
     allowUnknown: true, 
