@@ -210,9 +210,13 @@ if (!user || !(await user.comparePassword(password))) {
 }
 
 // 2. Proteksi Portal Admin (Pastikan Admin login di /admin/login)
-// Jika URL tidak mengandung kata 'admin', berarti dia login di tempat user biasa -> TOLAK
-if (user.role === 'admin' && !req.originalUrl.includes('admin')) {
-  return res.status(403).json({ success: false, message: 'Silakan gunakan portal login admin.' });
+// Cek apakah request ditujukan ke endpoint admin ATAU dikirim dari halaman admin (Referer)
+const isTargetingAdmin = req.originalUrl.includes('admin') || 
+                         (req.headers.referer && req.headers.referer.includes('admin'));
+
+// Jika user adalah Admin, tapi tidak login lewat jalur Admin -> TOLAK
+if (user.role === 'admin' && !isTargetingAdmin) {
+  return res.status(403).json({ success: false, message: 'Akun Admin harus login melalui Portal Admin.' });
 }
 
 // 3. LOGIKA YANG KITA BAHAS: Cegah User yang belum verifikasi
