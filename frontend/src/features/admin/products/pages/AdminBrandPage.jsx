@@ -22,6 +22,7 @@ const AdminBrandPage = () => {
       toast.success('Brand updated!');
     } catch (err) {
       toast.error('Update failed');
+      console.log(err);
     }
   };
 
@@ -72,7 +73,7 @@ const AdminBrandPage = () => {
             className="bg-[#ffd814] hover:bg-[#f7ca00] text-black px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50"
           >
             {isCreating ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
-            Signup
+            Add
           </button>
         </form>
       </div>
@@ -82,7 +83,7 @@ const AdminBrandPage = () => {
           <thead className="bg-gray-50 text-gray-600 text-xs uppercase">
             <tr>
               <th className="px-6 py-4">Nama Merk</th>
-              <th className="px-6 py-4 text-right">Aksi</th>
+              <th className="px-6 py-4 text-right">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">

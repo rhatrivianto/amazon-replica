@@ -23,6 +23,15 @@ export const categoryApi = apiSlice.injectEndpoints({
       invalidatesTags: ['Category'],
     }),
     
+      updateCategory: builder.mutation({
+      query: ({ id, ...updateData }) => ({
+        url: `/categoriess/${id}`,
+        method: 'PATCH',
+        body: updateData,
+      }),
+      invalidatesTags: ['Categories'],
+    }),
+
     deleteCategory: builder.mutation({
       query: (id) => ({
         url: `/categories/${id}`,
@@ -37,5 +46,6 @@ export const {
   useGetCategoriesQuery, 
   useCreateCategoryMutation,
   useGetCategoryByIdQuery,
-  useDeleteCategoryMutation 
+  useDeleteCategoryMutation,
+  useUpdateCategoryMutation
 } = categoryApi;

@@ -4,6 +4,8 @@ import streamifier from 'streamifier'; // Library kecil untuk stream buffer ke c
 import * as productService from '../services/product.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import Category from '../models/category.model.js';
+import Product from '../models/product.model.js'; // FIX: Import Model Product
+import slugify from 'slugify'; // Import slugify untuk generate URL produk
 
 
 // --- HELPER: Get Category ID + All Descendant IDs ---
@@ -132,8 +134,26 @@ const parseJsonFields = (body) => {
 };
 
 // Di Backend (Product Controller)
-export const createProduct = async (req, res) => {
+export const createProduct = async (req, res, next) => {
     try {
+        // --- FIX: Upload Images ke Cloudinary sebelum simpan ke DB ---
+        // Jika tidak ada ini, yang tersimpan hanya nama file (misal: "gambar.jpg") bukan URL Cloudinary
+        if (req.files && req.files.length > 0) {
+            const uploadPromises = req.files.map((file) => {
+                return new Promise((resolve, reject) => {
+                    const stream = cloudinary.uploader.upload_stream(
+                        { folder: 'amazon-clone/products' },
+                        (error, result) => {
+                            if (result) resolve(result.secure_url);
+                            else reject(error);
+                        }
+                    );
+                    streamifier.createReadStream(file.buffer).pipe(stream);
+                });
+            });
+            req.body.images = await Promise.all(uploadPromises);
+        }
+
         // Trik Amazon: Parse kembali string JSON dari FormData
         if (typeof req.body.shippingInfo === 'string') {
             req.body.shippingInfo = JSON.parse(req.body.shippingInfo);
@@ -145,11 +165,24 @@ export const createProduct = async (req, res) => {
             req.body.bulletPoints = JSON.parse(req.body.bulletPoints);
         }
 
+        // --- FIX: Generate Slug Otomatis dari Nama Produk ---
+        if (req.body.name) {
+            req.body.slug = slugify(req.body.name, { lower: true, strict: true });
+        }
+        
+        // --- FIX: Hapus field unik jika string kosong ("") agar tidak error duplikat ---
+        // MongoDB menganggap "" sebagai nilai unik. Kita harus menghapusnya agar dianggap null/missing.
+        if (req.body.asin === "") delete req.body.asin;
+        if (req.body.modelNumber === "") delete req.body.modelNumber;
+
+        console.log("📦 [Create Product] Final Data:", { name: req.body.name, slug: req.body.slug, asin: req.body.asin });
+
         // Lanjutkan ke validasi dan penyimpanan...
         const newProduct = await Product.create(req.body);
         res.status(201).json({ success: true, data: newProduct });
     } catch (error) {
-        res.status(400).json({ status: 400, data: error.message });
+        // Gunakan next(error) agar ditangani oleh globalErrorHandler (termasuk error Duplicate Key E11000)
+        next(error);
     }
 };
 export const updateProduct = asyncHandler(async (req, res) => {
@@ -170,6 +203,15 @@ export const updateProduct = asyncHandler(async (req, res) => {
     });
     req.body.images = await Promise.all(uploadPromises);
   }
+
+  // --- FIX: Update Slug jika Nama Produk berubah ---
+  if (req.body.name) {
+    req.body.slug = slugify(req.body.name, { lower: true, strict: true });
+  }
+  
+  // --- FIX: Hapus field unik jika string kosong saat update ---
+  if (req.body.asin === "") delete req.body.asin;
+  if (req.body.modelNumber === "") delete req.body.modelNumber;
 
   const product = await productService.updateProduct(req.params.id, req.body);
   res.status(200).json({ status: 'success', data: product });

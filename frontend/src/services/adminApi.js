@@ -29,7 +29,7 @@ export const adminApi = apiSlice.injectEndpoints({
     }),
     createProduct: builder.mutation({
       query: (formData) => ({
-        url: '/products',
+        url: '/admin', // UBAH KE /admin agar melewati middleware parseFormDataJSON
         method: 'POST',
         body: formData, // FormData otomatis menangani boundary multipart
       }),
@@ -37,7 +37,7 @@ export const adminApi = apiSlice.injectEndpoints({
     }),
     updateProduct: builder.mutation({
       query: ({ id, formData }) => ({
-        url: `/products/${id}`,
+        url: `/admin/${id}`, // UBAH KE /admin
         method: 'PATCH',
         body: formData,
       }),
@@ -45,7 +45,7 @@ export const adminApi = apiSlice.injectEndpoints({
     }),
     deleteProduct: builder.mutation({
       query: (id) => ({
-        url: `/products/${id}`,
+        url: `/admin/${id}`, // UBAH KE /admin
         method: 'DELETE',
       }),
       invalidatesTags: ['AdminStats','Products'],
