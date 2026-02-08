@@ -79,7 +79,7 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Verification email has been sended to Mailtrap.'
+      message: 'Verification email has been sent.'
       });
     } catch (emailError) {
       console.error("❌ Failed to send a verification email:", emailError.message);
@@ -200,7 +200,6 @@ export const resetPassword = async (req, res) => {
 // --- LOGIN ---
 export const login = async (req, res) => {
   try {
-    console.log("📦 Data dari Frontend(user):", req.body);
     const { email, password } = req.body;
 
 // 1. Cek Email & Password

@@ -22,16 +22,17 @@ const handleLogin = async (e) => {
     try {
       const result = await login({ email, password }).unwrap();
       
+      // Backend mengembalikan object { user: {...}, token: "..." }
       // KRUSIAL: Simpan ke Redux Store agar ProtectedRoute tahu kita sudah login
       dispatch(setAdminCredentials({ 
-        admin: result.user, 
-        token: result.token 
+        admin: result.user, // Pastikan slice Anda menerima properti 'admin' atau sesuaikan jadi 'user'
+        token: result.token
       }));
       
       toast.success(`Selamat datang, ${result.user.name}!`, { id: loadingToast });
       navigate('/admin/dashboard');
     } catch (err) {
-      toast.error(err.data?.message || "Admin credetial verification failed", { id: loadingToast });
+      toast.error(err.data?.message || "Admin credential verification failed", { id: loadingToast });
     }
   };
 
