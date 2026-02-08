@@ -50,7 +50,7 @@ const AdminProductPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Package className="text-yellow-500" /> Inventory Produk
+            <Package className="text-yellow-500" /> Inventory Products
           </h1>
           <p className="text-gray-400 text-sm">Kelola katalog produk dan stok barang Anda</p>
         </div>

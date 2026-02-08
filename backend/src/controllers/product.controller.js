@@ -6,6 +6,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import Category from '../models/category.model.js';
 import Product from '../models/product.model.js'; // FIX: Import Model Product
 import slugify from 'slugify'; // Import slugify untuk generate URL produk
+import AppError from '../utils/AppError.js'; // Import AppError untuk handle 404
 
 
 // --- HELPER: Get Category ID + All Descendant IDs ---
@@ -185,7 +186,7 @@ export const createProduct = async (req, res, next) => {
         next(error);
     }
 };
-export const updateProduct = asyncHandler(async (req, res) => {
+export const updateProduct = asyncHandler(async (req, res, next) => {
   parseJsonFields(req.body);
 
   if (req.files && req.files.length > 0) {
@@ -213,7 +214,16 @@ export const updateProduct = asyncHandler(async (req, res) => {
   if (req.body.asin === "") delete req.body.asin;
   if (req.body.modelNumber === "") delete req.body.modelNumber;
 
-  const product = await productService.updateProduct(req.params.id, req.body);
+  // --- FIX: Update langsung via Model (Bypass Service) agar logika slug & unique field jalan ---
+  const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true
+  });
+
+  if (!product) {
+    return next(new AppError('No product found with that ID', 404));
+  }
+
   res.status(200).json({ status: 'success', data: product });
 });
 /**

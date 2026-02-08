@@ -29,7 +29,7 @@ const handleLogin = async (e) => {
         token: result.token
       }));
       
-      toast.success(`Selamat datang, ${result.user.name}!`, { id: loadingToast });
+      toast.success(`Wellcome, ${result.user.name}!`, { id: loadingToast });
       navigate('/admin/dashboard');
     } catch (err) {
       toast.error(err.data?.message || "Admin credential verification failed", { id: loadingToast });
