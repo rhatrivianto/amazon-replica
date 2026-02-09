@@ -1,9 +1,10 @@
 
 import { useGetMyOrdersQuery } from '../../../services/orderApi.js';
-import { Package, Clock, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Package, Clock, CheckCircle2, ChevronRight, RefreshCw } from 'lucide-react';
 
 const OrderPage = () => {
-  const { data, isLoading, error } = useGetMyOrdersQuery();
+  // Ambil fungsi 'refetch' untuk memaksa ambil data baru
+  const { data, isLoading, error, refetch } = useGetMyOrdersQuery();
   const orders = data?.orders || data?.data || [];
 
   if (isLoading) return <div className="p-10 text-center">Loading your orders...</div>;
@@ -14,7 +15,15 @@ const OrderPage = () => {
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
         <span>Your Account</span> <ChevronRight size={14} /> <span className="text-orange-700">Your Orders</span>
       </div>
-      <h1 className="text-3xl font-medium mb-6">Your Orders</h1>
+      
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-medium">Your Orders</h1>
+        <button 
+          onClick={refetch} 
+          className="flex items-center gap-2 text-sm text-blue-600 hover:underline hover:text-orange-700">
+          <RefreshCw size={16} /> Refresh List
+        </button>
+      </div>
 
       {orders.length === 0 ? (
         <div className="bg-white p-12 border rounded-lg text-center shadow-sm">
@@ -56,7 +65,8 @@ const OrderPage = () => {
                   <span className="text-lg font-bold text-gray-900">Payment {order.paymentStatus}</span>
                 </div>
 
-                {order.items.map((item) => (
+                {/* Tambahkan pengaman (|| []) agar tidak error jika items undefined */}
+                {(order.items || []).map((item) => (
                   <div key={item._id} className="flex flex-col md:flex-row gap-6 py-4 border-b last:border-0">
                     <div className="w-24 h-24 flex-shrink-0">
                       <img 

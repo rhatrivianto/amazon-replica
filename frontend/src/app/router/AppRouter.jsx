@@ -26,7 +26,6 @@ import {
   PaymentSuccessPage,
   PaymentCancelPage, 
   OrderPage,
-  UserOrdersPage,
   UserAddressPage,
   SellLayout,
   SellPage,
@@ -100,7 +99,7 @@ const router = createBrowserRouter([
       { path: 'order/success', element: <PaymentSuccessPage /> },
       { path: 'order/cancel', element: <PaymentCancelPage /> },
       { path: 'orders', element: <OrderPage /> },
-      { path: 'account/orders', element: <UserOrdersPage /> },
+      { path: 'account/orders', element: <OrderPage /> }, // UBAH KE OrderPage (Konsisten)
       { path: 'account/addresses', element: <UserAddressPage /> },
       { path: 'verify-email', element: <EmailVerificationPage /> },
       { path: 'privacy', element: <PrivacyPage /> },
@@ -161,4 +160,3 @@ const AppRouter = () => (
 );
 
 export default AppRouter;
-

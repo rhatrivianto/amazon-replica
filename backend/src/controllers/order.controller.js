@@ -38,7 +38,7 @@ export const checkout = async (req, res, next) => {
       cancel_url:'http://localhost:5173/order/cancel',
       customer_email: req.user.email,
       metadata: {
-        userId: req.user.id.toString(),
+        userId: req.user._id.toString(), // Gunakan _id agar lebih aman
       },
     });
 
@@ -56,25 +56,36 @@ export const stripeWebhook = async (req, res) => {
   let event;
 
   try {
+    console.log("🔔 [Webhook] Menerima sinyal dari Stripe...");
+    
     // Memverifikasi bahwa data benar-benar datang dari Stripe
     event = stripe.webhooks.constructEvent(
       req.body, 
       sig, 
       process.env.STRIPE_WEBHOOK_SECRET
     );
+    console.log("✅ [Webhook] Signature Verified! Event:", event.type);
   } catch (err) {
+    console.error(`❌ [Webhook Error]: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   // Jika pembayaran sukses
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
+    const userId = session.metadata ? session.metadata.userId : null;
     
-    // Ambil userId yang kita simpan di metadata tadi
-    const userId = session.metadata.userId;
+    console.log(`💰 [Webhook] Payment Success for User: ${userId}`);
 
-    // Selesaikan pesanan di database
-    await orderService.finalizeOrder(userId, session);
+    if (userId) {
+      try {
+        // Selesaikan pesanan di database
+        await orderService.finalizeOrder(userId, session);
+        console.log("📦 [Webhook] Order Created & Cart Cleared!");
+      } catch (error) {
+        console.error("❌ [Webhook] Gagal memproses order:", error);
+      }
+    }
   }
 
   res.json({ received: true });

@@ -1,7 +1,7 @@
 
 import { useGetCartQuery } from '../../../services/cartApi.js';
 import { useCreateCheckoutSessionMutation } from '../../../services/orderApi.js';
-import { Lock, Loader2, MapPin, ChevronRight, ShieldCheck } from 'lucide-react'; // Icon ditambahkan
+import { Lock, Loader2, MapPin, ChevronRight, ShieldCheck, AlertCircle } from 'lucide-react'; // Icon ditambahkan
 import { toast } from 'react-hot-toast';
 
 const CheckoutPage = () => {
@@ -10,6 +10,10 @@ const CheckoutPage = () => {
 
   const cart = cartData?.data;
   const subtotal = cart?.totalPrice || 0;
+
+  // --- FIX: Batas Minimal Transaksi Stripe ---
+  const MIN_ORDER_AMOUNT = 10000; // Rp 10.000 (Batas aman Stripe IDR)
+  const isBelowMinimum = subtotal < MIN_ORDER_AMOUNT;
 
   const handlePayment = async () => {
     try {
@@ -99,8 +103,8 @@ const CheckoutPage = () => {
           <div className="border rounded-lg p-4 sticky top-24 space-y-4 shadow-sm bg-[#fdfdfd]">
             <button 
               onClick={handlePayment}
-              disabled={isProcessing || !cart?.items?.length}
-              className="w-full bg-[#ffd814] hover:bg-[#f7ca00] py-2.5 rounded-lg text-sm font-medium shadow-sm border border-[#a88734] disabled:bg-gray-200 transition-colors"
+              disabled={isProcessing || !cart?.items?.length || isBelowMinimum}
+              className="w-full bg-[#ffd814] hover:bg-[#f7ca00] py-2.5 rounded-lg text-sm font-medium shadow-sm border border-[#a88734] disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
             >
               {isProcessing ? (
                 <div className="flex items-center justify-center gap-2">
@@ -109,6 +113,14 @@ const CheckoutPage = () => {
               ) : "Place your order"}
             </button>
             
+            {/* --- FIX: Tampilkan Peringatan jika di bawah minimal --- */}
+            {isBelowMinimum && (
+              <div className="bg-red-50 border border-red-200 rounded p-3 flex gap-2 items-start text-xs text-red-700">
+                <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                <p>Total pesanan minimal <strong>Rp{MIN_ORDER_AMOUNT.toLocaleString()}</strong> untuk diproses (Syarat Payment Gateway).</p>
+              </div>
+            )}
+
             <p className="text-[11px] text-gray-500 text-center leading-tight">
               By placing your order, you agree to Amazon&apos;s privacy notice and conditions of use.
             </p>
