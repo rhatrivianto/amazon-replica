@@ -5,7 +5,8 @@ import { protect } from '../middlewares/auth.middleware.js';
 const router = express.Router();
 // Webhook harus bisa diakses oleh Stripe tanpa token kita (Stripe punya secret sendiri)
 // Letakkan di paling atas
-router.post('/webhook',  orderController.stripeWebhook);
+// WAJIB: Gunakan express.raw() agar signature verification berhasil
+router.post('/webhook', express.raw({ type: 'application/json' }), orderController.stripeWebhook);
 
 // Rute di bawah ini wajib Login
 router.use(protect);

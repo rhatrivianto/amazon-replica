@@ -71,7 +71,7 @@ useEffect(() => {
   if (error) return (
     <div className="p-10 text-center text-red-500 bg-red-50 rounded-lg border border-red-100">
       <p className="font-bold">Gagal mengambil data produk</p>
-      <p className="text-sm mt-1">{error?.data?.message || error?.error || 'Terjadi kesalahan jaringan'}</p>
+      <p className="text-sm mt-1">{error?.data?.message || error?.error || 'Network error'}</p>
     </div>
   );
 

@@ -70,7 +70,7 @@ export const globalErrorHandler = (err, req, res, next) => {
     // Kirim Response
     res.status(error.statusCode || 500).json({
       status: error.status || 'error',
-      message: error.isOperational ? error.message : 'Terjadi kesalahan sistem yang tidak terduga',
+      message: error.isOperational ? error.message : 'happend failured please try again later',
     });
     // --- BAGIAN PENTING: CATAT KE BUKU LOG JIKA RUSAK PARAH ---
     if (!err.isOperational) {

@@ -26,7 +26,7 @@ const CategoryBrowsePage = () => {
             <div className="h-8 w-48 bg-gray-200 animate-pulse rounded"></div>
           ) : (
             <h1 className="text-xl font-bold">
-              Results for <span className="text-[#e47911]">"{categoryData?.data?.name}"</span>
+              Results for <span className="text-[#e47911]">&quot;{categoryData?.data?.name}&quot;</span>
             </h1>
           )}
           <p className="text-sm text-gray-500 mt-1">

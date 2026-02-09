@@ -1,14 +1,24 @@
 import { Star } from 'lucide-react';
 
-const ReviewSnapshot = ({ rating = 0, numReviews = 0 }) => {
-  // Simulasi data bar (Amazon biasanya mengirimkan ini dari backend)
-  const stats = [
-    { star: 5, percentage: 75 },
-    { star: 4, percentage: 15 },
-    { star: 3, percentage: 5 },
-    { star: 2, percentage: 3 },
-    { star: 1, percentage: 2 },
-  ];
+const ReviewSnapshot = ({ rating = 0, numReviews = 0, ratingsDistribution = [] }) => {
+  // DEBUG: Cek apakah data distribusi rating sampai ke sini (Lihat di Console Browser F12)
+  console.log("📸 [ReviewSnapshot] Props:", { rating, numReviews, ratingsDistribution });
+
+  // Hindari pembagian dengan nol jika belum ada ulasan
+  const totalReviews = numReviews > 0 ? numReviews : 1;
+
+  // Buat statistik dari data backend, bukan data dummy
+  const stats = [5, 4, 3, 2, 1].map(starValue => {
+    // Cari data untuk bintang ini dari prop
+    const ratingData = ratingsDistribution.find(r => r.rating === starValue);
+    // Jika ditemukan, ambil jumlahnya, jika tidak, anggap 0
+    const count = ratingData ? ratingData.count : 0;
+    // Hitung persentasenya
+    const percentage = Math.round((count / totalReviews) * 100);
+
+    return { star: starValue, percentage };
+  });
+
 
   return (
     <div className="w-full md:w-64 space-y-4">

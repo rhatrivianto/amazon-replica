@@ -34,8 +34,8 @@ export const checkout = async (req, res, next) => {
       payment_method_types: ['card'],
       line_items,
       mode: 'payment',
-      success_url:'http://localhost:5173/order/success',
-      cancel_url:'http://localhost:5173/order/cancel',
+      success_url: `${process.env.CLIENT_URL}/order/success`,
+      cancel_url: `${process.env.CLIENT_URL}/order/cancel`,
       customer_email: req.user.email,
       metadata: {
         userId: req.user._id.toString(), // Gunakan _id agar lebih aman

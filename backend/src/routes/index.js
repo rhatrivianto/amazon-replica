@@ -9,6 +9,8 @@ import cartRoute from './cart.route.js';
 import orderRoute from './order.route.js';
 import paymentRoute from './payment.route.js';
 import brandRoute from './brand.route.js';
+import reviewRoutes from './review.route.js'; // Import Review Routes
+import SearchRoutes from './search.route.js'; 
 
 const router = express.Router();
 
@@ -20,6 +22,8 @@ router.use('/products', productRoute);
 router.use('/categories', categoryRoute);
 router.use('/cart', cartRoute);
 router.use('/orders', orderRoute);
+router.use('/reviews', reviewRoutes); // Daftarkan /api/v1/reviews
+router.use('/search', SearchRoutes);
 router.use('/payments', paymentRoute);
 router.use('/brands', brandRoute);
 router.get('/', (req, res) => res.json({ message: "Welcome to Amazon API V1" }));

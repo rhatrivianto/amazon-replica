@@ -51,6 +51,12 @@ const productSchema = new mongoose.Schema({
   ratingsAverage: { type: Number, default: 0, index: true },
   numReviews: { type: Number, default: 0 },
   
+  // --- DISTRIBUSI RATING (Untuk Diagram Batang) ---
+  ratingsDistribution: [{
+    rating: { type: Number }, // Bintang (5, 4, 3, 2, 1)
+    count: { type: Number }   // Jumlah ulasan
+  }],
+  
   // --- SEO & SEARCH OPTIMIZATION ---
   tags: [String], // Keyword tambahan untuk algoritma pencarian
 }, { 

@@ -5,7 +5,7 @@ import { User, Check, Star } from 'lucide-react'; // Check ditambahkan di sini
 import { useSelector } from 'react-redux';
 import { selectUserInfo } from '../../auth/authSlice.js';
 
-const ReviewSection = ({ productId, productRating, numReviews }) => {
+const ReviewSection = ({ productId, productRating, numReviews, ratingsDistribution }) => {
   const { data, isLoading } = useGetProductReviewsQuery(productId);
   const reviews = data?.reviews || data?.data || [];
   const userInfo = useSelector(selectUserInfo);
@@ -14,7 +14,7 @@ const ReviewSection = ({ productId, productRating, numReviews }) => {
     <div className="max-w-[1500px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 mt-10">
       {/* KIRI: Snapshot & Form */}
       <div className="md:col-span-4 lg:col-span-3 space-y-8">
-        <ReviewSnapshot rating={productRating} numReviews={numReviews} />
+        <ReviewSnapshot rating={productRating} numReviews={numReviews} ratingsDistribution={ratingsDistribution} />
         
         {/* Form muncul jika user login */}
         {userInfo ? (

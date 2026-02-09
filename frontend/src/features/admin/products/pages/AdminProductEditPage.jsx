@@ -22,7 +22,7 @@ const AdminProductEditPage = () => {
     </div>
   );
 
-  if (error) return <div className="p-10 text-red-500">Produk tidak ditemukan atau terjadi kesalahan.</div>;
+  if (error) return <div className="p-10 text-red-500">The product is not found or System failure.</div>;
 
   return (
     <div className="max-w-5xl mx-auto p-6">

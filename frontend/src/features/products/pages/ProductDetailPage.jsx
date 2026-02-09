@@ -184,6 +184,7 @@ const ProductDetailPage = () => {
               productId={product._id} 
               productRating={product.rating} 
               numReviews={product.numReviews} 
+              ratingsDistribution={product.ratingsDistribution}
             />
           </div>
         </div>

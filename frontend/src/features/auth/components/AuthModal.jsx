@@ -58,7 +58,7 @@ const AuthModal = ({ isOpen, onClose, initialTab = 'signin', initialIsSeller = f
       }
     } catch (err) {
       // Menangkap error 403 (Admin dilarang atau Belum Verifikasi)
-      const errorMessage = err.data?.message || 'Terjadi kesalahan sistem';
+      const errorMessage = err.data?.message || 'System Failure';
       toast.error(errorMessage, { duration: 5000 });
     }
   };
