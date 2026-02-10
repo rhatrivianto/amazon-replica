@@ -42,17 +42,44 @@ export const checkout = async (req, res, next) => {
     });
 
     // 3. Buat Sesi Stripe
-    const session = await stripe.checkout.sessions.create({
+    // --- AMAZON STYLE RESILIENCE ---
+    // Coba buat sesi dengan gambar. Jika gagal (misal URL gambar mati/invalid),
+    // otomatis coba lagi TANPA gambar agar user tetap bisa bayar.
+    let session;
+    const sessionConfig = {
       payment_method_types: ['card'],
-      line_items,
       mode: 'payment',
       success_url: `${process.env.CLIENT_URL}/order/success`,
       cancel_url: `${process.env.CLIENT_URL}/order/cancel`,
       customer_email: req.user.email,
-      metadata: {
-        userId: req.user._id.toString(), // Gunakan _id agar lebih aman
-      },
-    });
+      metadata: { userId: req.user._id.toString() },
+    };
+
+    try {
+      // Percobaan 1: Dengan Gambar
+      session = await stripe.checkout.sessions.create({
+        ...sessionConfig,
+        line_items: line_items
+      });
+    } catch (stripeError) {
+      console.warn("⚠️ [Stripe] Gagal dengan gambar, mencoba fallback tanpa gambar...", stripeError.message);
+      
+      // Percobaan 2: Hapus gambar dari payload
+      const line_items_no_image = line_items.map(item => ({
+        ...item,
+        price_data: {
+          ...item.price_data,
+          product_data: {
+            name: item.price_data.product_data.name, // Ambil nama saja, tanpa images
+          }
+        }
+      }));
+
+      session = await stripe.checkout.sessions.create({
+        ...sessionConfig,
+        line_items: line_items_no_image
+      });
+    }
 
     res.status(200).json({
       status: 'success',

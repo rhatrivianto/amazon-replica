@@ -583,7 +583,7 @@ export const productsToSeed = [
     price: 299.95,
     stock: 45,
     description: "The Dedica Arte provides the perfect balance of performance and convenience in a sleek, compact design.",
-    images: ["https://images.unsplash.com/photo-1570554863620-65893f252756?auto=format&fit=crop&w=800&q=80"],
+    images: ["https://images.unsplash.com/photo-1572506488762-2055277d7044?auto=format&fit=crop&w=800&q=80"],
     bulletPoints: [
       "Compact 6-inch width",
       "Professional Steam Wand",
