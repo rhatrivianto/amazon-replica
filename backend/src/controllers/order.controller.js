@@ -17,17 +17,29 @@ export const checkout = async (req, res, next) => {
     }
 
     // 2. Format data untuk Stripe
-    const line_items = cartItems.map((item) => ({
-      price_data: {
-        currency: 'idr',
-        product_data: {
-          name: item.product.name,
-          images: [item.product.images[0]], // Stripe minta array
+    const line_items = cartItems.map((item) => {
+      // VALIDASI GAMBAR: Stripe wajib URL online (http/https).
+      // Jika gambar masih lokal (localhost) atau rusak, jangan kirim ke Stripe agar tidak Error 400.
+      let validImages = [];
+      if (item.product.images && item.product.images.length > 0) {
+        const img = item.product.images[0];
+        if (img && img.startsWith('http')) {
+          validImages = [img];
+        }
+      }
+
+      return {
+        price_data: {
+          currency: 'idr',
+          product_data: {
+            name: item.product.name,
+            images: validImages, // Hanya kirim jika URL valid
+          },
+          unit_amount: Math.round(item.product.price * 100), // WAJIB BULAT (Integer), Stripe menolak desimal
         },
-        unit_amount: item.product.price * 100, // Konversi ke sen
-      },
-      quantity: item.quantity,
-    }));
+        quantity: item.quantity,
+      };
+    });
 
     // 3. Buat Sesi Stripe
     const session = await stripe.checkout.sessions.create({

@@ -55,6 +55,12 @@ export const globalErrorHandler = (err, req, res, next) => {
   if (error.name === 'ValidationError') error = handleValidationErrorDB(error);
   if (error.name === 'CastError') error = handleCastErrorDB(error);
 
+  // --- FIX: Deteksi Error dari Stripe ---
+  // Izinkan pesan error Stripe lolos ke frontend (Operational Error)
+  if (err.type && err.type.startsWith('Stripe')) {
+    error.isOperational = true;
+  }
+
   if (process.env.NODE_ENV === 'development') {
     // DEV: Kirim detail lengkap untuk debugging
     // Gunakan statusCode dari error yang sudah diproses (error.statusCode)
