@@ -21,16 +21,16 @@ export const register = async (req, res) => {
     // 1. Cek jika email sudah ada
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ success: false, message: 'Email sudah terdaftar.' });
+      return res.status(400).json({ success: false, message: 'Email is already registered.' });
     }
 
     // 2. Validasi Khusus Seller
     if (role === 'seller') {
-      if (!storeName) return res.status(400).json({ success: false, message: 'Store Name wajib diisi untuk seller.' });
+      if (!storeName) return res.status(400).json({ success: false, message: 'Store Name is required for sellers.' });
       
       const storeExists = await User.findOne({ storeName });
       if (storeExists) {
-        return res.status(400).json({ success: false, message: 'Nama Toko sudah digunakan. Pilih nama lain.' });
+        return res.status(400).json({ success: false, message: 'Store Name is already in use. Please choose another name.' });
       }
     }
 
@@ -107,7 +107,7 @@ export const verifyEmail = async (req, res) => {
       // Kita tidak tahu apakah tokennya salah atau sudah sukses terhapus
       return res.status(200).json({ 
         success: true, 
-        message: 'Email sudah aktif atau sudah diverifikasi.' 
+        message: 'Email is already active or has been verified.' 
       });
     }
 
@@ -116,7 +116,7 @@ export const verifyEmail = async (req, res) => {
     user.verificationToken = undefined;
     await user.save();
 
-    res.status(200).json({ success: true, message: 'Email berhasil diverifikasi!' });
+    res.status(200).json({ success: true, message: 'Email verified successfully!' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -129,7 +129,7 @@ export const forgotPassword = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User dengan email tersebut tidak ditemukan.' });
+      return res.status(404).json({ success: false, message: 'User with this email address not found.' });
     }
 
     // 1. Generate Random Reset Token
@@ -157,12 +157,12 @@ export const forgotPassword = async (req, res) => {
         `
       });
 
-      res.status(200).json({ success: true, message: 'Link reset password telah dikirim ke email.' });
+      res.status(200).json({ success: true, message: 'Password reset link has been sent to your email.' });
     } catch (err) {
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save({ validateBeforeSave: false });
-      return res.status(500).json({ success: false, message: 'Failed to send the email. try it again.' });
+      return res.status(500).json({ success: false, message: 'Failed to send the email. Please try again.' });
     }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -182,16 +182,16 @@ export const resetPassword = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ success: false, message: 'Token tidak valid atau sudah kadaluarsa.' });
+      return res.status(400).json({ success: false, message: 'Token is invalid or has expired.' });
     }
 
     // 3. Update Password & Bersihkan token reset
     user.password = req.body.password;
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
-    await user.save();
+    await user.save(); // The pre-save hook will hash the password
 
-    res.status(200).json({ success: true, message: 'Password berhasil diubah. Silakan login.' });
+    res.status(200).json({ success: true, message: 'Password changed successfully. Please login.' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -208,12 +208,12 @@ const user = await User.findOne({ email }).select('+password');
     // --- DEBUG: Cek kenapa login gagal ---
     if (!user) {
       console.log(`❌ [LOGIN FAIL] User tidak ditemukan: ${email}`);
-      return res.status(401).json({ success: false, message: 'Email atau password salah' });
+      return res.status(401).json({ success: false, message: 'Incorrect email or password' });
     }
 
     if (!(await user.comparePassword(password))) {
       console.log(`❌ [LOGIN FAIL] Password salah untuk: ${email}`);
-  return res.status(401).json({ success: false, message: 'Email atau password salah' });
+  return res.status(401).json({ success: false, message: 'Incorrect email or password' });
 }
 
 // 2. Proteksi Portal Admin (Amazon Style Security)
@@ -222,12 +222,12 @@ const isTargetingAdmin = req.originalUrl.includes('admin') ||
                          (req.headers.referer && req.headers.referer.includes('admin'));
 
 if (user.role === 'admin' && !isTargetingAdmin) {
-  return res.status(403).json({ success: false, message: 'Akun Admin harus login melalui Portal Admin.' });
+  return res.status(403).json({ success: false, message: 'Admin accounts must log in through the Admin Portal.' });
 }
 
 // 3. LOGIKA YANG KITA BAHAS: Cegah User yang belum verifikasi
 if (user.role === 'user' && !user.isEmailVerified) {
-  return res.status(403).json({ success: false, message: 'Silakan verifikasi email Anda terlebih dahulu.' });
+  return res.status(403).json({ success: false, message: 'Please verify your email first.' });
 }
 
 // 4. Jika semua lolos, buat Token
@@ -260,7 +260,7 @@ export const registerSeller = async (req, res) => {
     // FIX: Hanya tolak jika dia seller DAN sudah punya nama toko.
     // Jika dia seller tapi storeName kosong (kasus Ustman), biarkan dia lanjut untuk set nama toko.
     if (currentUser.role === 'seller' && currentUser.storeName) {
-      return res.status(400).json({ success: false, message: 'Anda sudah terdaftar sebagai seller.' });
+      return res.status(400).json({ success: false, message: 'You are already registered as a seller.' });
     }
 
     if (!storeName) {

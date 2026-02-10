@@ -47,7 +47,7 @@ export const getAllProducts = async (filters) => {
 
 export const getProductById = async (id) => {
   const product = await Product.findById(id).populate('category', 'name');
-  if (!product) throw new AppError('Produk tidak ditemukan', 404);
+  if (!product) throw new AppError('Product not found', 404);
   return product;
 };
 

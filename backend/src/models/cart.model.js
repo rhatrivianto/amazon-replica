@@ -9,7 +9,7 @@ const cartItemSchema = new mongoose.Schema({
   quantity: {
     type: Number,
     required: true,
-    min: [1, 'Jumlah minimal adalah 1'],
+    min: [1, 'Minimum quantity is 1'],
     default: 1
   },
   price: { type: Number, required: true } // Harga saat barang dimasukkan ke keranjang

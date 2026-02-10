@@ -38,7 +38,7 @@ export const createReview = asyncHandler(async (req, res, next) => {
   } catch (error) {
     // Tangani error duplikat (User sudah review sebelumnya)
     if (error.code === 11000) {
-      return next(new AppError('Anda sudah memberikan ulasan untuk produk ini.', 400));
+      return next(new AppError('You have already reviewed this product.', 400));
     }
     next(error);
   }

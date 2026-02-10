@@ -7,8 +7,8 @@ export const getCart = async (userId) => {
 
 export const addToCart = async (userId, productId, quantity) => {
   const product = await Product.findById(productId);
-  if (!product) throw new Error('Produk tidak ditemukan');
-  if (product.stock < quantity) throw new Error('Stok tidak mencukupi');
+  if (!product) throw new Error('Product not found');
+  if (product.stock < quantity) throw new Error('Insufficient stock');
 
   let cart = await Cart.findOne({ user: userId });
 

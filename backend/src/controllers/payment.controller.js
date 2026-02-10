@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 export const getCheckoutSession = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.orderId).populate('items.product user');
-    if (!order) return res.status(404).json({ message: 'Order tidak ditemukan' });
+    if (!order) return res.status(404).json({ message: 'Order not found' });
 
     const session = await paymentService.createCheckoutSession(order);
     res.status(200).json({ status: 'success', sessionUrl: session.url });

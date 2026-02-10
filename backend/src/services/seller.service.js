@@ -55,12 +55,12 @@ export const createProduct = async (productData, sellerId) => {
  * 3. Update Product (Ownership Secured)
  */
 export const updateProduct = async (productId, updateData, sellerId, requesterRole) => {
-  const product = await Product.findById(productId);
-  if (!product) throw new AppError('Produk tidak ditemukan', 404);
+  const product = await Product.findById(productId).lean();
+  if (!product) throw new AppError('Product not found', 404);
 
   // SECURITY: Jika bukan Admin, pastikan dia pemilik produknya
   if (requesterRole !== 'admin' && product.seller.toString() !== sellerId.toString()) {
-    throw new AppError('Akses ditolak: Ini bukan produk Anda', 403);
+    throw new AppError('Access denied: This is not your product', 403);
   }
 
   // Update Slug jika nama berubah
@@ -85,12 +85,12 @@ export const updateProduct = async (productId, updateData, sellerId, requesterRo
  * 4. Delete Product (Cleanup images)
  */
 export const deleteProduct = async (productId, sellerId, requesterRole) => {
-  const product = await Product.findById(productId);
-  if (!product) throw new AppError('Produk tidak ditemukan', 404);
+  const product = await Product.findById(productId).lean();
+  if (!product) throw new AppError('Product not found', 404);
 
   // SECURITY: Cek kepemilikan
   if (requesterRole !== 'admin' && product.seller.toString() !== sellerId.toString()) {
-    throw new AppError('Akses ditolak: Tidak bisa menghapus produk orang lain', 403);
+    throw new AppError('Access denied: Cannot delete another user\'s product', 403);
   }
 
   // Hapus semua gambar dari Cloudinary agar tidak jadi sampah

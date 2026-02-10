@@ -10,14 +10,14 @@ const handleDuplicateFieldsDB = (err) => {
     const value = err.keyValue[field];
     // Handle jika value adalah null (misal slug gagal generate)
     const displayValue = value === null ? 'null' : value === '' ? 'String Kosong' : value;
-    const message = `Nilai duplikat pada field '${field}': ${displayValue}. Silakan gunakan nilai lain!`;
+    const message = `Duplicate value for field '${field}': ${displayValue}. Please use another value.`;
     return new AppError(message, 400);
   }
 
   // 2. Fallback: Parsing pesan error string (Cara Lama)
   const value = err.errmsg ? err.errmsg.match(/(["'])(\\?.)*?\1/) : null;
   if (value) {
-    const message = `Nilai duplikat: ${value[0]}. Silakan gunakan nilai lain!`;
+    const message = `Duplicate value: ${value[0]}. Please use another value.`;
     return new AppError(message, 400);
   }
 
@@ -25,13 +25,13 @@ const handleDuplicateFieldsDB = (err) => {
   // Contoh: "... index: slug_1 dup key: { slug: null }"
   const fieldMatch = err.message ? err.message.match(/index: (\w+)_\d+/) : null;
   const fieldName = fieldMatch ? fieldMatch[1] : 'Unknown Field';
-  return new AppError(`Nilai duplikat terdeteksi pada field '${fieldName}'.`, 400);
+  return new AppError(`Duplicate value detected on field '${fieldName}'.`, 400);
 };
 
 // Handler: Error Validasi Mongoose
 const handleValidationErrorDB = (err) => {
   const errors = Object.values(err.errors).map((el) => el.message);
-  const message = `Data tidak valid: ${errors.join('. ')}`;
+  const message = `Invalid input data: ${errors.join('. ')}`;
   return new AppError(message, 400);
 };
 
@@ -70,7 +70,7 @@ export const globalErrorHandler = (err, req, res, next) => {
     // Kirim Response
     res.status(error.statusCode || 500).json({
       status: error.status || 'error',
-      message: error.isOperational ? error.message : 'happend failured please try again later',
+      message: error.isOperational ? error.message : 'An unexpected failure occurred. Please try again later.',
     });
     // --- BAGIAN PENTING: CATAT KE BUKU LOG JIKA RUSAK PARAH ---
     if (!err.isOperational) {

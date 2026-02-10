@@ -22,7 +22,6 @@ const CheckoutPage = () => {
         window.location.href = result.url;
       }
     } catch (err) {
-      toast.error(err.data?.message || "Gagal memproses pembayaran");
     }
   };
 

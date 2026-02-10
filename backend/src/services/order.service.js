@@ -4,8 +4,8 @@ import Product from '../models/product.model.js';
 
 // Digunakan oleh Controller untuk ambil data ke Stripe
 export const prepareOrderData = async (userId) => {
-  const cart = await Cart.findOne({ user: userId }).populate('items.product');
-  if (!cart || cart.items.length === 0) throw new Error('Keranjang kosong');
+  const cart = await Cart.findOne({ user: userId }).populate('items.product').lean();
+  if (!cart || cart.items.length === 0) throw new Error('Cart is empty');
   return cart.items; 
 };
 
@@ -32,7 +32,7 @@ export const finalizeOrder = async (userId, session) => {
     paymentStatus: 'paid',
     paymentMethod: 'Stripe',
     stripeSessionId: session.id,
-    shippingAddress: session.shipping_details?.address || 'Alamat dari Stripe'
+    shippingAddress: session.shipping_details?.address || 'Address from Stripe'
   });
 
   // 3. Kosongkan Keranjang

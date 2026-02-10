@@ -16,10 +16,10 @@ export const useAdminAuth = () => {
       // Panggil API logout jika diperlukan
       await logoutApi().unwrap();
     } catch (error) {
-       toast.error("Failed to logout:", error || "Unexpectation failure")
+       toast.error("Failed to logout:", error || "Unexpected failure")
     } finally {
       localStorage.removeItem('adminToken');
-      toast.success("Berhasil keluar dari Dashboard");
+      toast.success("Successfully logged out from Dashboard");
       navigate('/admin/login');
     }
   };
@@ -30,5 +30,3 @@ export const useAdminAuth = () => {
     logout
   };
 };
-
-

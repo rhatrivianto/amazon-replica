@@ -4,17 +4,17 @@ import bcrypt from 'bcryptjs';
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Nama harus diisi'],
+    required: [true, 'Name is required'],
   },
   email: {
     type: String,
-    required: [true, 'Email harus diisi'],
+    required: [true, 'Email is required'],
     unique: true,
     lowercase: true,
   },
   password: {
     type: String,
-    required: [true, 'Password harus diisi'],
+    required: [true, 'Password is required'],
     minlength: 6,
     select: false, // Agar password tidak ikut terambil saat query biasa
   },

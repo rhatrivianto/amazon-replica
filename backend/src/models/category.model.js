@@ -3,8 +3,8 @@ import slugify from 'slugify';
 
 const categorySchema = new mongoose.Schema({
   name: { 
-    type: String, 
-    required: [true, 'CAtegory name must be filled'], 
+    type: String,
+    required: [true, 'Category name must be filled'], 
     unique: true, 
     trim: true 
   },
