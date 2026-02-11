@@ -5,7 +5,7 @@ const productSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   slug: { type: String, unique: true, index: true },
   brand: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand', index: true },
-  category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', index: true },
+  category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', index: true, required: [true, 'Product must belong to a category.'] },
   
   // --- RELASI SELLER (AMAZON STYLE) ---
   seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useGetCategoriesQuery, useUpdateCategoryMutation, useCreateCategoryMutation, useDeleteCategoryMutation } from '../../../../services/categoryApi.js';
-import { Plus, Tag, Trash2, Loader2, Edit2, Check, X} from 'lucide-react';
+import { Plus, Tag, Trash2, Loader2, Edit2, Check, X, CornerDownRight} from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const AdminCategoryPage = () => {
   const [newCategory, setNewCategory] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
+  const [parentId, setParentId] = useState(''); // State untuk menyimpan ID parent
   
   const { data: categories, isLoading } = useGetCategoriesQuery();
   const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
@@ -28,9 +29,11 @@ const AdminCategoryPage = () => {
       const handleAddCategory = async (e) => {
     e.preventDefault();
     if (!newCategory.trim()) return;
+    // Kirim nama dan parentId. Jika parentId kosong, backend akan menganggapnya null (root).
     try {
-      await createCategory({ name: newCategory }).unwrap();
+      await createCategory({ name: newCategory, parent: parentId || null }).unwrap();
       setNewCategory('');
+      setParentId(''); // Reset dropdown setelah submit
       toast.success('Category added successfully!');
     } catch (err) {
       toast.error(err.data?.message || 'Failed to add content category');
@@ -49,6 +52,32 @@ const AdminCategoryPage = () => {
   }
 };
   
+  // --- HELPER: Membuat daftar kategori menjadi flat untuk dropdown ---
+  const flattenCategories = (categories, level = 0) => {
+    let flatList = [];
+    for (const category of categories) {
+      flatList.push({ ...category, level });
+      if (category.children && category.children.length > 0) {
+        flatList = flatList.concat(flattenCategories(category.children, level + 1));
+      }
+    }
+    return flatList;
+  };
+
+  // --- HELPER: Render baris tabel secara rekursif ---
+  const renderCategoryRows = (categories, level = 0) => {
+    return categories.map(cat => (
+      <>
+        <tr key={cat._id} className="hover:bg-gray-50 transition-colors">
+          {/* Panggil komponen baris di sini */}
+          <CategoryRow category={cat} level={level} />
+        </tr>
+        {/* Jika ada anak, panggil fungsi ini lagi untuk anak-anaknya */}
+        {cat.children && cat.children.length > 0 && renderCategoryRows(cat.children, level + 1)}
+      </>
+    ));
+  };
+
 
   return (
     <div className="p-6 max-w-4xl mx-auto bg-gray-50 min-h-screen">
@@ -61,14 +90,27 @@ const AdminCategoryPage = () => {
 
       {/* Form Tambah Kategori (Light Style) */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 mb-8 shadow-sm">
-        <form onSubmit={handleAddCategory} className="flex gap-4">
+        <form onSubmit={handleAddCategory} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <input
             type="text"
             placeholder="Name of new category (ex: Elektronic)"
-            className="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:border-[#e47911] focus:ring-1 focus:ring-[#e47911] outline-none transition-all"
+            className="md:col-span-1 bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:border-[#e47911] focus:ring-1 focus:ring-[#e47911] outline-none transition-all"
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
           />
+          {/* Dropdown untuk memilih Parent */}
+          <select
+            value={parentId}
+            onChange={(e) => setParentId(e.target.value)}
+            className="md:col-span-1 bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:border-[#e47911] focus:ring-1 focus:ring-[#e47911] outline-none transition-all"
+          >
+            <option value="">Select Parent (Optional)</option>
+            {categories?.data && flattenCategories(categories.data).map(cat => (
+              <option key={cat._id} value={cat._id}>
+                {'—'.repeat(cat.level)} {cat.name}
+              </option>
+            ))}
+          </select>
           <button
             type="submit"
             disabled={isCreating}
@@ -93,83 +135,58 @@ const AdminCategoryPage = () => {
             {isLoading ? (
               <tr><td className="p-10 text-center text-gray-400" colSpan="2">Loading category...</td></tr>
             ) : (
-              categories?.data?.map((cat) => (
-                <tr key={cat._id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    {/* LOGIKA EDITING DISINI */}
-                    {editingId === cat._id ? (
-                      <input
-                        type="text"
-                        className="border border-orange-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-orange-200 w-full max-w-xs"
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        autoFocus
-                        onKeyDown={(e) => {
-        if (e.key === 'Enter') handleUpdate(cat._id);
-        if (e.key === 'Escape') setEditingId(null);
-      }}
-                      />
-                    ) : (
-                      <span className="font-medium text-gray-800">{cat.name}</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-3">
-                        {editingId === cat._id ? (
-                          <>
-                          <button 
-                            onClick={() => handleUpdate(cat._id)}
-                            className="text-green-600 hover:text-green-700 p-1"
-                            title="Save Changes"
-                          >
-                            <Check size={18} />
-                          </button>
-                          <button 
-                            onClick={() => setEditingId(null)}
-                            className="text-gray-400 hover:text-gray-600 p-1"
-                            title="Save Changes"
-                         >
-                            <Check size={18} />
-                        </button>
-                        <button 
-                            onClick={() => setEditingId(null)}
-                            className="text-gray-400 hover:text-gray-600 p-1"
-                            title="Cancel"
-                        >
-                        <X size={18} />
-                      </button>
-                    </>
-                ) : (
-                  <>
-                    <button 
-                    onClick={() => {
-                    setEditingId(cat._id);
-                    setEditName(cat.name);
-                    }}
-                   className="text-gray-400 hover:text-blue-500 transition-colors p-1"
-                   title="Edit Category"
-                >
-                   <Edit2 size={18} />
-                  </button>
-                  <button 
-                      onClick={() => handleDelete(cat._id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors p-2"
-                      title="Delete Category"            
-                  >
-                      <Trash2 size={18} />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))
-        )}
-      </tbody>
-    </table>
-  </div>
-</div>
-);
+              renderCategoryRows(categories?.data || [])
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  // --- Komponen Internal untuk Baris Tabel ---
+  function CategoryRow({ category, level }) {
+    const indentStyle = { paddingLeft: `${24 * level}px` };
+
+    return (
+      <>
+        <td className="px-6 py-4" style={indentStyle}>
+          <div className="flex items-center gap-2">
+            {level > 0 && <CornerDownRight size={14} className="text-gray-400" />}
+            {editingId === category._id ? (
+              <input
+                type="text"
+                className="border border-orange-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-orange-200 w-full max-w-xs"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleUpdate(category._id);
+                  if (e.key === 'Escape') setEditingId(null);
+                }}
+              />
+            ) : (
+              <span className="font-medium text-gray-800">{category.name}</span>
+            )}
+          </div>
+        </td>
+        <td className="px-6 py-4 text-right">
+          <div className="flex justify-end gap-3">
+            {editingId === category._id ? (
+              <>
+                <button onClick={() => handleUpdate(category._id)} className="text-green-600 hover:text-green-700 p-1" title="Save Changes"><Check size={18} /></button>
+                <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-gray-600 p-1" title="Cancel"><X size={18} /></button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => { setEditingId(category._id); setEditName(category.name); }} className="text-gray-400 hover:text-blue-500 transition-colors p-1" title="Edit Category"><Edit2 size={18} /></button>
+                <button onClick={() => handleDelete(category._id)} className="text-gray-400 hover:text-red-500 transition-colors p-2" title="Delete Category"><Trash2 size={18} /></button>
+              </>
+            )}
+          </div>
+        </td>
+      </>
+    );
+  }
 };
 
 export default AdminCategoryPage;

@@ -4,31 +4,33 @@ export const createCategory = async (data) => {
   return await Category.create(data);
 };
 
-// export const getAllCategories = async () => {
-//   // Hanya ambil kategori level teratas (parent: null)
-//   // Lalu populate 'children' untuk mendapatkan sub-kategori
-//   return await Category.find({ parent: null })
-//     .populate({
-//       path: 'children',
-//       populate: { path: 'children' } // Ini untuk mengambil sub-sub-category (Level 3)
-//     })
-//     .sort({ name: 1 })
-//     .lean({ virtuals: true });
-// };
-
+/**
+ * Mengambil Kategori dalam bentuk Pohon (Tree Structure)
+ * Level 1 (Root) -> Level 2 (Children) -> Level 3 (Grandchildren)
+ * Amazon biasanya memiliki kedalaman 3-4 level.
+ */
 export const getAllCategories = async () => {
   try {
-    // Gunakan find biasa dulu tanpa populate untuk ngetes apakah error hilang
+    // 1. Ambil hanya kategori yang TIDAK punya parent (Root Categories)
     const result = await Category.find({ parent: null })
+      // 2. Populate Anak (Level 2)
       .populate({
-        path: 'children',
-        strictPopulate: false, // Tambahkan ini langsung di objek path
+        path: 'children', // Level 2
+        strictPopulate: false,
         populate: { 
-          path: 'children',
-          strictPopulate: false 
+          path: 'children', // Level 3
+          strictPopulate: false,
+          populate: {
+            path: 'children', // Level 4
+            strictPopulate: false,
+            populate: {
+              path: 'children', // Level 5
+              strictPopulate: false
+            }
+          }
         }
       })
-      .sort({ name: 1 })
+      .sort({ name: 1 }) // Urutkan A-Z
       .lean();
       
     return result;

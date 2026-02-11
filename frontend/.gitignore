@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 COMMAND.md
+inputProducts.md
 
 node_modules
 dist/

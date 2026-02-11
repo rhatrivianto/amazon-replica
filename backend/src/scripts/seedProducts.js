@@ -22,7 +22,7 @@ const productsToSeed = [
   {
     name: "Sony WH-1000XM5 Wireless Noise Canceling Headphones",
     brandName: "Sony",
-    categoryHierarchy: ["Electronics", "Headphones, Earbuds & Accessories", "Headphones", "Over-Ear Headphones"],
+    categoryHierarchy: ["Electronics", "Headphones", "Earbuds & Accessories", "Over-Ear Headphones"],
     price: 348.00,
     stock: 120,
     description: "The Sony WH-1000XM5 headphones rewrite the rules for distraction-free listening. Two processors control 8 microphones for unprecedented noise cancellation and exceptional call quality.",
@@ -1009,11 +1009,11 @@ const seedProducts = async () => {
         if (!category) {
           category = await Category.create({ 
             name: catName, 
-            slug: slugify(catName, { lower: true }),
+            slug: slugify(catName, { lower: true, strict: true }), // Tambahkan strict: true agar URL bersih
             parent: currentParentId, // Link ke parent sebelumnya
             level: i // Set level kedalaman
           });
-          console.log(`📁 Created Category: ${catName} (Level ${i})`);
+          console.log(`📁 Created Category: ${catName} (Level ${i}) [Parent: ${currentParentId}]`);
         }
         
         // Update parent untuk iterasi berikutnya

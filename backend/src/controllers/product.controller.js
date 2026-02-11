@@ -54,8 +54,8 @@ export const getProducts = asyncHandler(async (req, res) => {
     search: q,
     category,
     sort: sortBy,
-    minPrice: Number(minPrice),
-    maxPrice: Number(maxPrice),
+    minPrice: minPrice ? Number(minPrice) : undefined, // FIX: Kirim undefined jika kosong, jangan NaN
+    maxPrice: maxPrice ? Number(maxPrice) : undefined,
     page: Number(page),
     limit: Number(limit),
     seller // Tambahkan filter seller
@@ -69,7 +69,8 @@ export const getProducts = asyncHandler(async (req, res) => {
       pages: result.totalPages,
       currentPage: Number(page)
     },
-    data: result.products 
+    data: result.products,
+    facets: result.facets // Kirim data filter dinamis ke frontend
   });
 });
 
@@ -91,19 +92,23 @@ export const getSuggestions = asyncHandler(async (req, res) => {
 export const getProductById = asyncHandler(async (req, res) => {
   const product = await productService.getProductById(req.params.id);
 
-  // --- GENERATE BREADCRUMB (Silsilah Kategori) ---
+  // --- GENERATE DYNAMIC BREADCRUMB (Silsilah Kategori) ---
+  // Fitur ini membuat breadcrumb otomatis: "Electronics > Audio > Headphones"
+  // Tanpa perlu input manual string di database.
   let breadcrumbs = [];
   if (product && product.category) {
     // Cek apakah category berupa Object (populated) atau ID string
     let currentId = product.category._id || product.category;
     
     let currentCat = await Category.findById(currentId);
+    // Loop naik ke atas (Anak -> Bapak -> Kakek) sampai mentok (Root)
     while (currentCat) {
       breadcrumbs.unshift({ 
         name: currentCat.name, 
         slug: currentCat.slug,
         _id: currentCat._id 
       });
+      // Pindah ke parent dari kategori saat ini
       currentCat = currentCat.parent ? await Category.findById(currentCat.parent) : null;
     }
   }
@@ -122,7 +127,7 @@ export const getProductById = asyncHandler(async (req, res) => {
 
 
 const parseJsonFields = (body) => {
-  const jsonFields = ['specifications', 'bulletPoints', 'shippingInfo', 'tags'];
+  const jsonFields = ['specifications', 'bulletPoints', 'shippingInfo', 'tags', 'categoryHierarchy'];
   jsonFields.forEach(field => {
     if (typeof body[field] === 'string') {
       try {
@@ -165,6 +170,9 @@ export const createProduct = async (req, res, next) => {
         if (typeof req.body.bulletPoints === 'string') {
             req.body.bulletPoints = JSON.parse(req.body.bulletPoints);
         }
+        if (typeof req.body.categoryHierarchy === 'string') {
+            req.body.categoryHierarchy = JSON.parse(req.body.categoryHierarchy);
+        }
 
         // --- FIX: Generate Slug Otomatis dari Nama Produk ---
         if (req.body.name) {
@@ -175,6 +183,32 @@ export const createProduct = async (req, res, next) => {
         // MongoDB menganggap "" sebagai nilai unik. Kita harus menghapusnya agar dianggap null/missing.
         if (req.body.asin === "") delete req.body.asin;
         if (req.body.modelNumber === "") delete req.body.modelNumber;
+
+        // --- FITUR BARU: Auto-Create Category Hierarchy (Seperti Seed Script) ---
+        // Memungkinkan Admin input kategori via browser: ["Electronics", "Audio", "Headphones"]
+        // Backend akan otomatis membuatkan Parent/Child jika belum ada.
+        if (req.body.categoryHierarchy && Array.isArray(req.body.categoryHierarchy) && req.body.categoryHierarchy.length > 0) {
+            let currentParentId = null;
+            let finalCategoryId = null;
+
+            for (let i = 0; i < req.body.categoryHierarchy.length; i++) {
+                const catName = req.body.categoryHierarchy[i];
+                let category = await Category.findOne({ name: catName });
+
+                if (!category) {
+                    category = await Category.create({
+                        name: catName,
+                        slug: slugify(catName, { lower: true, strict: true }),
+                        parent: currentParentId,
+                        level: i
+                    });
+                }
+                currentParentId = category._id;
+                finalCategoryId = category._id;
+            }
+            // Set kategori produk ke anak terakhir (paling spesifik)
+            req.body.category = finalCategoryId;
+        }
 
         console.log("📦 [Create Product] Final Data:", { name: req.body.name, slug: req.body.slug, asin: req.body.asin });
 
@@ -213,6 +247,29 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
   // --- FIX: Hapus field unik jika string kosong saat update ---
   if (req.body.asin === "") delete req.body.asin;
   if (req.body.modelNumber === "") delete req.body.modelNumber;
+
+  // --- FITUR BARU: Auto-Create Category Hierarchy saat UPDATE ---
+  if (req.body.categoryHierarchy && Array.isArray(req.body.categoryHierarchy) && req.body.categoryHierarchy.length > 0) {
+      let currentParentId = null;
+      let finalCategoryId = null;
+
+      for (let i = 0; i < req.body.categoryHierarchy.length; i++) {
+          const catName = req.body.categoryHierarchy[i];
+          let category = await Category.findOne({ name: catName });
+
+          if (!category) {
+              category = await Category.create({
+                  name: catName,
+                  slug: slugify(catName, { lower: true, strict: true }),
+                  parent: currentParentId,
+                  level: i
+              });
+          }
+          currentParentId = category._id;
+          finalCategoryId = category._id;
+      }
+      req.body.category = finalCategoryId;
+  }
 
   // --- FIX: Update langsung via Model (Bypass Service) agar logika slug & unique field jalan ---
   const product = await Product.findByIdAndUpdate(req.params.id, req.body, {

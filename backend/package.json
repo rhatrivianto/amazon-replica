@@ -14,7 +14,9 @@
 
     "start": "node src/server.js",
 
-    "start:production": "cross-env NODE_ENV=production node src/server.js"
+    "start:production": "cross-env NODE_ENV=production node src/server.js",
+
+    "seed": "node src/scripts/seedProducts.js"
 
   },
 
@@ -81,4 +83,3 @@
   }
 
 }
-

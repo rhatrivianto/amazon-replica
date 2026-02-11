@@ -14,6 +14,19 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
   const { data: categories } = useGetCategoriesQuery();
   const { data: brands } = useGetBrandsQuery();
 
+  // Helper untuk membuat daftar kategori menjadi flat untuk dropdown
+  const flattenCategories = (categories, level = 0) => {
+    let flatList = [];
+    if (!categories) return flatList;
+    for (const category of categories) {
+      flatList.push({ ...category, level });
+      if (category.children && category.children.length > 0) {
+        flatList = flatList.concat(flattenCategories(category.children, level + 1));
+      }
+    }
+    return flatList;
+  };
+
   const handleLocalSubmit = (e) => {
   e.preventDefault();
   const form = e.target;
@@ -89,7 +102,7 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
         </div>
         <div className="space-y-1">
           <label className="text-sm font-bold text-gray-400">Brand Vendor</label>
-          <select name="brand" className="w-full bg-gray-900 border border-gray-700 rounded-md p-2.5 focus:border-[#e47911] outline-none" required defaultValue={initialData?.brand?._id}>
+          <select name="brand" className="w-full bg-gray-900 border border-gray-700 rounded-md p-2.5 focus:border-[#e47911] outline-none" required defaultValue={initialData?.brand?._id || initialData?.brand}>
             <option value="">Select Brand</option>
             {brands?.data?.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
           </select>
@@ -102,15 +115,16 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
 
       {/* SECTION 3: CATEGORY BTG */}
       <div className="space-y-1">
-        <label className="text-sm font-bold text-gray-400">Category (Browse Tree Guide)</label>
-        <select name="category" className="w-full bg-gray-900 border border-gray-700 rounded-md p-2.5 focus:border-[#e47911] outline-none" required defaultValue={initialData?.category?._id}>
+        <label className="text-sm font-bold text-gray-400">Category</label>
+        <select name="category" className="w-full bg-gray-900 border border-gray-700 rounded-md p-2.5 focus:border-[#e47911] outline-none mt-1" required defaultValue={initialData?.category?._id || initialData?.category}>
           <option value="">Select Category Path</option>
-          {categories?.data?.map(cat => (
+          {categories?.data && flattenCategories(categories.data).map(cat => (
             <option key={cat._id} value={cat._id}>
-              {cat.parent ? `${cat.parent?.name} › ${cat.name}` : cat.name}
+              {'—'.repeat(cat.level)} {cat.name}
             </option>
           ))}
         </select>
+        <p className="text-xs text-gray-400 mt-1">Manage categories in the &apos;Category Management&apos; page first.</p>
       </div>
 
       {/* SECTION 4: LOGISTICS & BADGES (NEW) */}
