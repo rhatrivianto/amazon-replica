@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ImagePreview from './ImagePreview.jsx';
 import SpecificationInput from './SpecificationInput.jsx';
 import BulletPointInput from './BulletPointInput.jsx';
@@ -13,6 +13,16 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
   
   const { data: categories } = useGetCategoriesQuery();
   const { data: brands } = useGetBrandsQuery();
+
+  // --- FIX: Reset State saat berpindah produk (Edit Mode) ---
+  useEffect(() => {
+    if (initialData) {
+      setSpecifications(initialData.specifications || []);
+      setBulletPoints(initialData.bulletPoints || []);
+      // Reset gambar baru karena kita pindah ke produk lain
+      setImages([]); 
+    }
+  }, [initialData]);
 
   // Helper untuk membuat daftar kategori menjadi flat untuk dropdown
   const flattenCategories = (categories, level = 0) => {
@@ -73,7 +83,12 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
   onSubmit(formData);
 };
   return (
-    <form onSubmit={handleLocalSubmit} className="space-y-8 text-white bg-gray-800/50 p-6 rounded-2xl border border-gray-700">
+    <form 
+      // --- FIX: Key Unik untuk Memaksa Re-render Total saat Ganti Produk ---
+      key={initialData?._id || 'create-new'}
+      onSubmit={handleLocalSubmit} 
+      className="space-y-8 text-white bg-gray-800/50 p-6 rounded-2xl border border-gray-700"
+    >
       
       {/* SECTION 1: BASIC INFO */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
