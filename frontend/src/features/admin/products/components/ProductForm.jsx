@@ -10,6 +10,10 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
   const [images, setImages] = useState([]);
   const [specifications, setSpecifications] = useState(initialData?.specifications || []);
   const [bulletPoints, setBulletPoints] = useState(initialData?.bulletPoints || []);
+  // --- FIX: Gunakan state untuk mengontrol nilai dropdown ---
+  const [brandId, setBrandId] = useState(initialData?.brand?._id || initialData?.brand || '');
+  const [categoryId, setCategoryId] = useState(initialData?.category?._id || initialData?.category || '');
+
   
   const { data: categories } = useGetCategoriesQuery();
   const { data: brands } = useGetBrandsQuery();
@@ -19,6 +23,8 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
     if (initialData) {
       setSpecifications(initialData.specifications || []);
       setBulletPoints(initialData.bulletPoints || []);
+      setBrandId(initialData.brand?._id || initialData.brand || '');
+      setCategoryId(initialData.category?._id || initialData.category || '');
       // Reset gambar baru karena kita pindah ke produk lain
       setImages([]); 
     }
@@ -50,8 +56,8 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
   formData.append('description', form.description.value);
   formData.append('price', Number(form.price.value));
   formData.append('stock', Number(form.stock.value));
-  formData.append('category', form.category.value);
-  formData.append('brand', form.brand.value);
+  formData.append('category', categoryId); // Gunakan state
+  formData.append('brand', brandId); // Gunakan state
   
   // Field Tambahan
   formData.append('asin', form.asin?.value || '');
@@ -117,7 +123,13 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
         </div>
         <div className="space-y-1">
           <label className="text-sm font-bold text-gray-400">Brand Vendor</label>
-          <select name="brand" className="w-full bg-gray-900 border border-gray-700 rounded-md p-2.5 focus:border-[#e47911] outline-none" required defaultValue={initialData?.brand?._id || initialData?.brand}>
+          <select 
+            name="brand" 
+            className="w-full bg-gray-900 border border-gray-700 rounded-md p-2.5 focus:border-[#e47911] outline-none" 
+            required 
+            value={brandId} // Gunakan value
+            onChange={(e) => setBrandId(e.target.value)} // Gunakan onChange
+          >
             <option value="">Select Brand</option>
             {brands?.data?.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
           </select>
@@ -131,7 +143,13 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
       {/* SECTION 3: CATEGORY BTG */}
       <div className="space-y-1">
         <label className="text-sm font-bold text-gray-400">Category</label>
-        <select name="category" className="w-full bg-gray-900 border border-gray-700 rounded-md p-2.5 focus:border-[#e47911] outline-none mt-1" required defaultValue={initialData?.category?._id || initialData?.category}>
+        <select 
+          name="category" 
+          className="w-full bg-gray-900 border border-gray-700 rounded-md p-2.5 focus:border-[#e47911] outline-none mt-1" 
+          required 
+          value={categoryId} // Gunakan value
+          onChange={(e) => setCategoryId(e.target.value)} // Gunakan onChange
+        >
           <option value="">Select Category Path</option>
           {categories?.data && flattenCategories(categories.data).map(cat => (
             <option key={cat._id} value={cat._id}>
