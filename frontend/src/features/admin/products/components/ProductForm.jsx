@@ -7,7 +7,9 @@ import { useGetCategoriesQuery } from '../../../../services/categoryApi.js';
 import { useGetBrandsQuery } from '../../../../services/brandApi.js';
 
 const ProductForm = ({ onSubmit, isLoading, initialData }) => {
-  const [images, setImages] = useState([]);
+  // FIX: Pisahkan state untuk gambar lama dan baru
+  const [existingImages, setExistingImages] = useState(initialData?.images || []);
+  const [newImages, setNewImages] = useState([]);
   const [specifications, setSpecifications] = useState(initialData?.specifications || []);
   const [bulletPoints, setBulletPoints] = useState(initialData?.bulletPoints || []);
   // --- FIX: Gunakan state untuk mengontrol nilai dropdown ---
@@ -25,8 +27,9 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
       setBulletPoints(initialData.bulletPoints || []);
       setBrandId(initialData.brand?._id || initialData.brand || '');
       setCategoryId(initialData.category?._id || initialData.category || '');
-      // Reset gambar baru karena kita pindah ke produk lain
-      setImages([]); 
+      // FIX: Isi state gambar lama, dan reset state gambar baru
+      setExistingImages(initialData.images || []);
+      setNewImages([]);
     }
   }, [initialData]);
 
@@ -81,9 +84,13 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
   };
   formData.append('shippingInfo', JSON.stringify(shippingData));
 
-  // Images
-  if (images.length > 0) {
-    images.forEach((img) => formData.append('images', img));
+  // FIX: Kirim gambar lama dan baru secara terpisah
+  // 1. Kirim daftar URL gambar lama yang masih dipertahankan
+  formData.append('existingImages', JSON.stringify(existingImages));
+
+  // 2. Kirim file gambar baru untuk di-upload
+  if (newImages.length > 0) {
+    newImages.forEach((img) => formData.append('images', img));
   }
   
   onSubmit(formData);
@@ -201,10 +208,12 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
         <textarea name="description" defaultValue={initialData?.description} rows="4" className="w-full bg-gray-900 border border-gray-700 rounded-md p-2 focus:border-[#e47911] outline-none" required></textarea>
       </div>
 
-      <ImagePreview 
-        selectedImages={images} 
-        onRemove={(index) => setImages(images.filter((_, i) => i !== index))} 
-        onSelect={(e) => setImages([...images, ...Array.from(e.target.files)].slice(0, 5))}
+      <ImagePreview
+        existingImages={existingImages}
+        newImages={newImages}
+        onRemoveExisting={(index) => setExistingImages(existingImages.filter((_, i) => i !== index))}
+        onRemoveNew={(index) => setNewImages(newImages.filter((_, i) => i !== index))}
+        onSelect={(e) => setNewImages([...newImages, ...Array.from(e.target.files)])}
       />
 
       <button type="submit" disabled={isLoading} className="w-full bg-[#ffd814] hover:bg-[#f7ca00] text-black font-bold py-4 rounded-xl shadow-lg shadow-yellow-600/20 transition-all transform active:scale-[0.98]">

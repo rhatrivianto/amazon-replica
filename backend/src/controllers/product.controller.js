@@ -7,6 +7,7 @@ import Category from '../models/category.model.js';
 import Product from '../models/product.model.js'; // FIX: Import Model Product
 import slugify from 'slugify'; // Import slugify untuk generate URL produk
 import AppError from '../utils/AppError.js'; // Import AppError untuk handle 404
+import { deleteFromCloudinary } from '../services/upload.service.js';
 
 
 // --- HELPER: Get Category ID + All Descendant IDs ---
@@ -221,29 +222,86 @@ export const createProduct = async (req, res, next) => {
     }
 };
 export const updateProduct = asyncHandler(async (req, res, next) => {
+  // 1. Find the product first to get its current state
+  const productToUpdate = await Product.findById(req.params.id);
+  if (!productToUpdate) {
+    return next(new AppError('No product found with that ID', 404));
+  }
+
   parseJsonFields(req.body);
 
+  let finalImageUrls = [];
+  let existingImagesToKeep = [];
+
+  // 2. Parse the list of existing images to keep from frontend
+  if (req.body.existingImages && typeof req.body.existingImages === 'string') {
+    try {
+      existingImagesToKeep = JSON.parse(req.body.existingImages);
+      if (Array.isArray(existingImagesToKeep)) {
+        finalImageUrls.push(...existingImagesToKeep);
+      }
+    } catch (e) {
+      console.error('Could not parse existingImages');
+    }
+  }
+
+  // 3. Identify and delete removed images from Cloudinary
+  const originalImages = productToUpdate.images || [];
+  const imagesToDelete = originalImages.filter(url => !existingImagesToKeep.includes(url));
+
+  if (imagesToDelete.length > 0) {
+    console.log(`🗑️ Deleting ${imagesToDelete.length} images from Cloudinary...`);
+    const deletePromises = imagesToDelete.map(url => {
+      try {
+        // Extract public_id from URL. Example: "amazon-clone/products/xyz"
+        const parts = url.split('/');
+        const folderIndex = parts.indexOf('amazon-clone');
+
+        // Safety check: Jika folder tidak ditemukan (misal gambar dummy), skip
+        if (folderIndex === -1) return Promise.resolve();
+
+        const publicIdWithExt = parts.slice(folderIndex).join('/');
+        const publicId = publicIdWithExt.substring(0, publicIdWithExt.lastIndexOf('.'));
+        
+        // FIX: Tambahkan .catch() agar jika gagal delete, update produk TIDAK error 500
+        return deleteFromCloudinary(publicId).catch(err => {
+          console.warn(`⚠️ Gagal hapus gambar Cloudinary (${publicId}), lanjut update...`, err.message);
+          return null; 
+        });
+      } catch (e) {
+        console.error(`Failed to extract public_id from ${url}`, e);
+        return Promise.resolve(); // Don't block update if one delete fails
+      }
+    });
+    await Promise.all(deletePromises);
+  }
+
+  // 4. Upload new images if any
   if (req.files && req.files.length > 0) {
     const uploadPromises = req.files.map((file) => {
       return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: 'amazon-clone/products' },
           (error, result) => {
-            if (result) resolve(result.secure_url);
-            else reject(error);
+            if (result) resolve(result.secure_url); else reject(error);
           }
         );
         streamifier.createReadStream(file.buffer).pipe(stream);
       });
     });
-    req.body.images = await Promise.all(uploadPromises);
+    const newImageUrls = await Promise.all(uploadPromises);
+    finalImageUrls.push(...newImageUrls);
   }
+
+  // 5. Prepare the final update payload
+  req.body.images = finalImageUrls;
+  delete req.body.existingImages; // Clean up temporary field
 
   // --- FIX: Update Slug jika Nama Produk berubah ---
   if (req.body.name) {
     req.body.slug = slugify(req.body.name, { lower: true, strict: true });
   }
-  
+
   // --- FIX: Hapus field unik jika string kosong saat update ---
   if (req.body.asin === "") delete req.body.asin;
   if (req.body.modelNumber === "") delete req.body.modelNumber;
@@ -271,15 +329,11 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
       req.body.category = finalCategoryId;
   }
 
-  // --- FIX: Update langsung via Model (Bypass Service) agar logika slug & unique field jalan ---
+  // 6. Update the product in the database
   const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true
   });
-
-  if (!product) {
-    return next(new AppError('No product found with that ID', 404));
-  }
 
   res.status(200).json({ status: 'success', data: product });
 });
