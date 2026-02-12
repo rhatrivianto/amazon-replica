@@ -12,10 +12,16 @@ export const prepareOrderData = async (userId) => {
 // DIPANGGIL OLEH WEBHOOK (Amazon Style)
 // Stok baru berkurang setelah uang masuk
 export const finalizeOrder = async (userId, session) => {
-  const cart = await Cart.findOne({ user: userId });
-  if (!cart) return;
+  // 1. IDEMPOTENCY CHECK (Cek Duplikasi)
+  // Jika webhook sudah jalan duluan, order mungkin sudah ada.
+  const existingOrder = await Order.findOne({ stripeSessionId: session.id });
+  if (existingOrder) return existingOrder;
 
-  // 1. Cek & Kurangi Stok
+  // 2. Ambil Keranjang
+  const cart = await Cart.findOne({ user: userId });
+  if (!cart) return null; // Keranjang kosong & Order belum ada (Safety check)
+
+  // 3. Cek & Kurangi Stok
   for (const item of cart.items) {
     const product = await Product.findById(item.product);
     if (product) {

@@ -5,6 +5,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const checkout = async (req, res, next) => {
   try {
+    // FIX: Bersihkan CLIENT_URL dari spasi atau newline yang tidak sengaja terbawa
+    const clientUrl = process.env.CLIENT_URL ? process.env.CLIENT_URL.trim() : '';
+
     // 1. Ambil item dari keranjang via service
     const cartItems = await orderService.prepareOrderData(req.user.id);
 
@@ -28,6 +31,9 @@ export const checkout = async (req, res, next) => {
         }
       }
 
+      // FIX: Pastikan harga valid & bulat
+      const unitAmount = item.product.price ? Math.round(item.product.price * 100) : 0;
+
       return {
         price_data: {
           currency: 'idr',
@@ -35,7 +41,7 @@ export const checkout = async (req, res, next) => {
             name: item.product.name,
             images: validImages, // Hanya kirim jika URL valid
           },
-          unit_amount: Math.round(item.product.price * 100), // WAJIB BULAT (Integer), Stripe menolak desimal
+          unit_amount: unitAmount, // WAJIB BULAT (Integer), Stripe menolak desimal
         },
         quantity: item.quantity,
       };
@@ -49,8 +55,8 @@ export const checkout = async (req, res, next) => {
     const sessionConfig = {
       payment_method_types: ['card'],
       mode: 'payment',
-      success_url: `${process.env.CLIENT_URL}/order/success`,
-      cancel_url: `${process.env.CLIENT_URL}/order/cancel`,
+      success_url: `${clientUrl}/order/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${clientUrl}/order/cancel`,
       customer_email: req.user.email,
       metadata: { userId: req.user._id.toString() },
     };
@@ -128,6 +134,32 @@ export const stripeWebhook = async (req, res) => {
   }
 
   res.json({ received: true });
+};
+
+export const verifyPayment = async (req, res, next) => {
+  try {
+    const { session_id } = req.body;
+    if (!session_id) return res.status(400).json({ message: 'Session ID is required' });
+
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+
+    if (session.payment_status === 'paid') {
+      const userId = session.metadata.userId;
+      // Panggil service untuk membuat order & kosongkan keranjang
+      // Note: Service sebaiknya mengecek apakah order dengan session_id ini sudah ada (idempotency)
+      const order = await orderService.finalizeOrder(userId, session);
+      
+      res.status(200).json({ 
+        status: 'success', 
+        message: 'Payment verified and order created.',
+        orderId: order?._id 
+      });
+    } else {
+      res.status(400).json({ status: 'fail', message: 'Payment not successful yet.' });
+    }
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const getOrders = async (req, res, next) => {
