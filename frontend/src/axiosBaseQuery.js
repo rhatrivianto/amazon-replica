@@ -1,5 +1,9 @@
 import axios from "axios";
 import apiInstance from "./axios/instance.js"; // Pastikan path ini benar
+import { toast } from "react-hot-toast";
+// Import action logout dari kedua slice
+import { logout } from './features/auth/authSlice.js';
+import { adminLogout } from './features/admin/auth/adminAuthSlice.js';
 
  export const axiosBaseQuery = () => async (args, api) => {
   // 1. Normalisasi args (Support string shorthand dari RTK Query)
@@ -43,6 +47,23 @@ import apiInstance from "./axios/instance.js"; // Pastikan path ini benar
 
     return { data: result.data };
   } catch (axiosError) {
+    // --- INTERCEPTOR 401: AUTO LOGOUT (AMAZON STYLE) ---
+    if (axiosError.response?.status === 401) {
+      const state = api.getState();
+      // Hanya jalankan jika masih ada token di state (mencegah loop)
+      if (state.auth.token || state.adminAuth.token) {
+        // Tampilkan pesan error ke user
+        toast.error("Sesi Anda telah berakhir. Silakan login kembali.", { 
+          id: 'session-expired-toast' // ID untuk mencegah toast duplikat
+        });
+        
+        // Dispatch kedua action logout untuk membersihkan semua sesi
+        api.dispatch(logout());
+        api.dispatch(adminLogout());
+      }
+    }
+
+    // Kembalikan error asli ke RTK Query agar bisa ditangkap di komponen jika perlu
     return {
       error: {
         status: axiosError.response?.status || 500,

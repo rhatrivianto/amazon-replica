@@ -41,6 +41,13 @@ const handleCastErrorDB = (err) => {
   return new AppError(message, 400);
 };
 
+// Handler: Error JWT Invalid Signature
+const handleJWTError = () => new AppError('Invalid token. Please log in again.', 401);
+
+// Handler: Error JWT Expired Token
+const handleJWTExpiredError = () => new AppError('Your session has expired. Please log in again.', 401);
+
+
 export const globalErrorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
@@ -54,6 +61,8 @@ export const globalErrorHandler = (err, req, res, next) => {
   if (error.code === 11000) error = handleDuplicateFieldsDB(error);
   if (error.name === 'ValidationError') error = handleValidationErrorDB(error);
   if (error.name === 'CastError') error = handleCastErrorDB(error);
+  if (error.name === 'JsonWebTokenError') error = handleJWTError();
+  if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
 
   // --- FIX: Deteksi Error dari Stripe ---
   // Izinkan pesan error Stripe lolos ke frontend (Operational Error)
