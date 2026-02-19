@@ -21,7 +21,7 @@ const Navbar = ({ onOpenAuth }) => { // 1. Terima props onOpenAuth dari AppRoute
         <div className="px-4 py-2 flex items-center gap-2 md:gap-4">{/* Perkecil gap di mobile */}
           {/* Logo */}
           <Link to="/" className="shrink-0 border border-transparent hover:border-white p-1">
-            <img src="/amazon-logo-white.png" alt="Amazon" className="h-6 md:h-7 object-contain" />
+            <img src="/amazon-logo-white.png?v=2" alt="Amazon" className="h-6 md:h-7 object-contain" />
           </Link>
 
          {/* Location: Tetap hidden lg:flex sudah benar */}
