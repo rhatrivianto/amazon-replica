@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useGetCartQuery } from '../../../services/cartApi.js';
 import { selectUserInfo, logout } from '../../../features/auth/authSlice.js';
 import SearchBar from './SearchBar.jsx';
+import logoUrl from '../../../assets/amazon-logo-white.jpg';
 
 const Navbar = ({ onOpenAuth }) => { // 1. Terima props onOpenAuth dari AppRouter
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -21,7 +22,7 @@ const Navbar = ({ onOpenAuth }) => { // 1. Terima props onOpenAuth dari AppRoute
         <div className="px-4 py-2 flex items-center gap-2 md:gap-4">{/* Perkecil gap di mobile */}
           {/* Logo */}
           <Link to="/" className="shrink-0 border border-transparent hover:border-white p-1">
-            <img src="/amazon-logo-final.png" alt="Amazon" className="h-6 md:h-7 object-contain" />
+            <img src={logoUrl} alt="Amazon" className="h-6 md:h-7 object-contain" />
           </Link>
 
          {/* Location: Tetap hidden lg:flex sudah benar */}
