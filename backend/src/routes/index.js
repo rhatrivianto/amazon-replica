@@ -1,16 +1,16 @@
 // backend/routes/index.js
 import express from 'express';
-import authRoutes from './auth.route.js'; // Pastikan path ini benar
-import adminRoute from './admin.route.js'; // Import Admin Route
-import sellerRoute from './seller.route.js'; // Import Seller Route
-import productRoute from './product.route.js';
-import categoryRoute from "./category.route.js";
-import cartRoute from './cart.route.js';
-import orderRoute from './order.route.js';
-import paymentRoute from './payment.route.js';
-import brandRoute from './brand.route.js';
-import reviewRoutes from './review.route.js'; // Import Review Routes
-import SearchRoutes from './search.route.js'; 
+import authRoutes from './auth.routes.js'; // Pastikan path ini benar
+import adminRoute from './admin.routes.js'; // Import Admin Route
+import sellerRoute from './seller.routes.js'; // Import Seller Route
+import productRoute from './product.routes.js';
+import categoryRoute from "./category.routes.js";
+import cartRoute from './cart.routes.js';
+import orderRoute from './order.routes.js';
+import paymentRoute from './payment.routes.js';
+import brandRoute from './brand.routes.js';
+import reviewRoutes from './review.routes.js'; // FIX: Gunakan file plural yang baru
+import SearchRoutes from './search.routes.js'; 
 
 const router = express.Router();
 

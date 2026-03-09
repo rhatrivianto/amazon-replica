@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -29,11 +30,26 @@ const userSchema = new mongoose.Schema({
     sparse: true, // Allows multiple users to have null/undefined storeName
     trim: true
   },
+  avatar: {
+    type: String,
+    default: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
+  },
+  bio: {
+    type: String,
+    maxlength: [300, 'Bio cannot be more than 300 characters']
+  },
+  location: String,
   // --- FIELD UNTUK VERIFIKASI EMAIL ---
   isEmailVerified: {
     type: Boolean,
     default: false, // Default tidak aktif sampai klik link
   },
+  wishlist: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product'
+    }
+  ],
   verificationToken: String,
   passwordResetToken: String, 
   passwordResetExpires: Date,

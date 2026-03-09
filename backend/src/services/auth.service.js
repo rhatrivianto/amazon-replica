@@ -1,5 +1,7 @@
 import User from '../models/user.model.js';
 import jwt from 'jsonwebtoken';
+import { env } from '../config/env.js';
+import crypto from 'crypto';
 
 export const registerUser = async (userData) => {
   const existingUser = await User.findOne({ email: userData.email });
@@ -23,34 +25,26 @@ export const loginUser = async (email, password) => {
 export const generateTokens = (user) => {
   const accessToken = jwt.sign(
     { id: user._id, role: user.role },
-    process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: '15m' }
+    env.jwtSecret,
+    { expiresIn: env.jwtExpiresIn || '15m' }
   );
   
   const refreshToken = jwt.sign(
     { id: user._id },
-    process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: '7d' }
+    env.jwtRefreshSecret,
+    { expiresIn: env.jwtRefreshExpiresIn || '7d' }
   );
   
   return { accessToken, refreshToken };
 };
 
 export const refreshUserToken = async (token) => {
-  const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+  const decoded = jwt.verify(token, env.jwtRefreshSecret);
   const user = await User.findById(decoded.id);
   if (!user) throw new Error('User not found');
   
   return generateTokens(user);
 };
-/**
- * Mengirim email instruksi reset password
- * @param {string} email 
- */
-import User from '../models/user.model.js';
-import crypto from 'crypto';
-
-// ... (fungsi login/register tetap sama) ...
 
 /**
  * Service murni untuk mencari user dan generate token
@@ -89,4 +83,4 @@ export const resetUserPassword = async (token, newPassword) => {
   await user.save();
   
   return user;
-}; f
+};

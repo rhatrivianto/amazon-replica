@@ -1,8 +1,9 @@
 import * as paymentService from '../services/payment.service.js';
 import Order from '../models/order.model.js';
 import Stripe from 'stripe';
+import { env } from '../config/env.js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(env.stripeSecretKey);
 
 export const getCheckoutSession = async (req, res, next) => {
   try {
@@ -20,7 +21,7 @@ export const stripeWebhook = async (req, res) => {
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(req.rawBody, sig, env.stripeWebhookSecret);
   } catch (err) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }

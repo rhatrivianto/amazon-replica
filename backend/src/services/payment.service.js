@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import { env } from '../config/env.js';
+const stripe = new Stripe(env.stripeSecretKey);
 
 export const createCheckoutSession = async (order) => {
   const lineItems = order.items.map(item => ({
@@ -7,9 +8,10 @@ export const createCheckoutSession = async (order) => {
       currency: 'idr',
       product_data: {
         name: item.product.name,
-        images: item.product.images,
+        // FIX: Pastikan images valid
+        images: item.product.images && item.product.images.length > 0 ? item.product.images.slice(0, 8) : [],
       },
-      unit_amount: item.price * 100, // Rupiah ke Sen
+      unit_amount: Math.round(item.price * 100), // FIX: Wajib Integer
     },
     quantity: item.quantity,
   }));
@@ -18,8 +20,8 @@ export const createCheckoutSession = async (order) => {
     payment_method_types: ['card'],
     line_items: lineItems,
     mode: 'payment',
-    success_url: `${process.env.FRONTEND_URL}/order-success/${order._id}`,
-    cancel_url: `${process.env.FRONTEND_URL}/cart`,
+    success_url: `${env.clientUrl}/order-success/${order._id}`,
+    cancel_url: `${env.clientUrl}/cart`,
     client_reference_id: order._id.toString(),
     customer_email: order.user.email,
   });

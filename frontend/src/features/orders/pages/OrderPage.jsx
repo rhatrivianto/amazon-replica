@@ -1,14 +1,16 @@
 
 import { useGetMyOrdersQuery } from '../../../services/orderApi.js';
 import { Package, Clock, CheckCircle2, ChevronRight, RefreshCw } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const OrderPage = () => {
   // Ambil fungsi 'refetch' untuk memaksa ambil data baru
-  const { data, isLoading, error, refetch } = useGetMyOrdersQuery();
+  const { data, isLoading, isFetching, error, refetch } = useGetMyOrdersQuery();
   const orders = data?.orders || data?.data || [];
 
   if (isLoading) return <div className="p-10 text-center">Loading your orders...</div>;
-  if (error) return <div className="p-10 text-center text-red-500">Failed to load orders.</div>;
+  // MODIFIKASI: Hanya tampilkan halaman error penuh jika data benar-benar kosong (load pertama gagal)
+  if (error && orders.length === 0) return <div className="p-10 text-center text-red-500">Failed to load orders.</div>;
 
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8 bg-gray-50 min-h-screen">
@@ -18,11 +20,21 @@ const OrderPage = () => {
       
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-medium">Your Orders</h1>
-        <button 
-          onClick={refetch} 
-          className="flex items-center gap-2 text-sm text-blue-600 hover:underline hover:text-orange-700">
-          <RefreshCw size={16} /> Refresh List
-        </button>
+        
+        {/* Wrapper div untuk menampung tombol dan pesan error kecil */}
+        <div className="flex flex-col items-end">
+          <button 
+            onClick={refetch} 
+            disabled={isFetching}
+            className="flex items-center gap-2 text-sm text-blue-600 hover:underline hover:text-orange-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            <RefreshCw size={16} className={isFetching ? "animate-spin" : ""} /> 
+            {isFetching ? "Refreshing..." : "Refresh List"}
+          </button>
+          {/* Tampilkan pesan error kecil jika refresh gagal (misal token expired) tapi data lama masih ada */}
+          {error && (
+            <span className="text-xs text-red-500 mt-1">{error?.data?.message || "Session expired. Please login."}</span>
+          )}
+        </div>
       </div>
 
       {orders.length === 0 ? (
@@ -54,7 +66,9 @@ const OrderPage = () => {
                 </div>
                 <div className="text-right flex flex-col items-end">
                   <p className="uppercase">Order # {order._id.substring(0, 12)}</p>
-                  <button className="text-blue-600 hover:text-orange-700 mt-1">View order details</button>
+                  <Link to={`/orders/${order._id}`} className="text-blue-600 hover:text-orange-700 mt-1 hover:underline">
+                    View order details
+                  </Link>
                 </div>
               </div>
 

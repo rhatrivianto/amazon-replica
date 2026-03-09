@@ -1,172 +1,116 @@
 import Stripe from 'stripe';
 import * as orderService from '../services/order.service.js';
+import AppError from '../utils/AppError.js';
+import { env } from '../config/env.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(env.stripeSecretKey);
 
-export const checkout = async (req, res, next) => {
-  try {
-    // FIX: Bersihkan CLIENT_URL dari spasi atau newline yang tidak sengaja terbawa
-    const clientUrl = process.env.CLIENT_URL ? process.env.CLIENT_URL.trim() : '';
-
-    // 1. Ambil item dari keranjang via service
-    const cartItems = await orderService.prepareOrderData(req.user.id);
-
-    // Tambahkan Pengecekan Keamanan (Defensive Programming)
-    if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Your cart is empty. Please add products before proceeding.'
-      });
-    }
-
-    // 2. Format data untuk Stripe
-    const line_items = cartItems.map((item) => {
-      // VALIDASI GAMBAR: Stripe wajib URL online (http/https).
-      // Jika gambar masih lokal (localhost) atau rusak, jangan kirim ke Stripe agar tidak Error 400.
-      let validImages = [];
-      if (item.product.images && item.product.images.length > 0) {
-        const img = item.product.images[0];
-        if (img && img.startsWith('http')) {
-          validImages = [img];
-        }
-      }
-
-      // FIX: Pastikan harga valid & bulat
-      const unitAmount = item.product.price ? Math.round(item.product.price * 100) : 0;
-
-      return {
-        price_data: {
-          currency: 'idr',
-          product_data: {
-            name: item.product.name,
-            images: validImages, // Hanya kirim jika URL valid
-          },
-          unit_amount: unitAmount, // WAJIB BULAT (Integer), Stripe menolak desimal
+export const createCheckoutSession = asyncHandler(async (req, res, next) => {
+  const { items, shippingAddress } = req.body;
+  const user = req.user;
+  const line_items = items.map((item) => ({
+      price_data: {
+        currency: 'idr',
+        product_data: {
+          name: item.product.name,
+          // FIX: Pastikan images ada dan valid. Stripe butuh array of strings.
+          images: item.product.images && item.product.images.length > 0 ? [item.product.images[0]] : [],
         },
-        quantity: item.quantity,
-      };
-    });
-
-    // 3. Buat Sesi Stripe
-    // --- AMAZON STYLE RESILIENCE ---
-    // Coba buat sesi dengan gambar. Jika gagal (misal URL gambar mati/invalid),
-    // otomatis coba lagi TANPA gambar agar user tetap bisa bayar.
-    let session;
-    const sessionConfig = {
+        unit_amount: Math.round(item.product.price * 100), // FIX: Wajib Integer (bulatkan desimal)
+      },
+      quantity: item.quantity,
+    }));
+  const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
+      line_items,
       mode: 'payment',
-      success_url: `${clientUrl}/order/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${clientUrl}/order/cancel`,
-      customer_email: req.user.email,
-      metadata: { userId: req.user._id.toString() },
-    };
-
-    try {
-      // Percobaan 1: Dengan Gambar
-      session = await stripe.checkout.sessions.create({
-        ...sessionConfig,
-        line_items: line_items
-      });
-    } catch (stripeError) {
-      console.warn("⚠️ [Stripe] Gagal dengan gambar, mencoba fallback tanpa gambar...", stripeError.message);
-      
-      // Percobaan 2: Hapus gambar dari payload
-      const line_items_no_image = line_items.map(item => ({
-        ...item,
-        price_data: {
-          ...item.price_data,
-          product_data: {
-            name: item.price_data.product_data.name, // Ambil nama saja, tanpa images
-          }
-        }
-      }));
-
-      session = await stripe.checkout.sessions.create({
-        ...sessionConfig,
-        line_items: line_items_no_image
-      });
-    }
-
-    res.status(200).json({
-      status: 'success',
-      url: session.url, // URL ini yang akan dibuka oleh frontend
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const stripeWebhook = async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  let event;
-
-  try {
-    console.log("🔔 [Webhook] Menerima sinyal dari Stripe...");
-    
-    // Memverifikasi bahwa data benar-benar datang dari Stripe
-    event = stripe.webhooks.constructEvent(
-      req.body, 
-      sig, 
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-    console.log("✅ [Webhook] Signature Verified! Event:", event.type);
-  } catch (err) {
-    console.error(`❌ [Webhook Error]: ${err.message}`);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  // Jika pembayaran sukses
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const userId = session.metadata ? session.metadata.userId : null;
-    
-    console.log(`💰 [Webhook] Payment Success for User: ${userId}`);
-
-    if (userId) {
-      try {
-        // Selesaikan pesanan di database
-        await orderService.finalizeOrder(userId, session);
-        console.log("📦 [Webhook] Order Created & Cart Cleared!");
-      } catch (error) {
-        console.error("❌ [Webhook] Gagal memproses order:", error);
+      success_url: `${env.clientUrl}/order/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${env.clientUrl}/order/cancel`,
+      customer_email: user.email,
+      client_reference_id: user._id.toString(),
+      metadata: {
+        shippingAddress: JSON.stringify(shippingAddress),
+        cartItems: JSON.stringify(items.map(i => ({ product: i.product._id, quantity: i.quantity }))),
       }
-    }
-  }
+    });
+  res.status(200).json({ status: 'success', session });
+});
 
-  res.json({ received: true });
+export const stripeWebhook = (req, res) => {
+  const signature = req.headers['stripe-signature'];
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, signature, env.stripeWebhookSecret);
+  } catch (err) {
+    console.log(`❌ Webhook signature verification failed.`, err.message);
+    return res.sendStatus(400);
+  }
+  if (event.type === 'checkout.session.completed') {
+    // Call the service to handle order creation
+    orderService.createOrderFromStripeSession(event.data.object).catch(err => {
+      console.error(`[Webhook] Failed to create order: ${err.message}`);
+    });
+  }
+  res.status(200).json({ received: true });
 };
 
-export const verifyPayment = async (req, res, next) => {
-  try {
-    const { session_id } = req.body;
-    if (!session_id) return res.status(400).json({ message: 'Session ID is required' });
-
-    const session = await stripe.checkout.sessions.retrieve(session_id);
-
-    if (session.payment_status === 'paid') {
-      const userId = session.metadata.userId;
-      // Panggil service untuk membuat order & kosongkan keranjang
-      // Note: Service sebaiknya mengecek apakah order dengan session_id ini sudah ada (idempotency)
-      const order = await orderService.finalizeOrder(userId, session);
-      
-      res.status(200).json({ 
-        status: 'success', 
-        message: 'Payment verified and order created.',
-        orderId: order?._id 
-      });
+export const verifyPaymentSession = asyncHandler(async (req, res, next) => {
+  const { session_id } = req.body;
+    if (!session_id) {
+      return next(new AppError('Session ID is required.', 400));
+    }
+  const session = await stripe.checkout.sessions.retrieve(session_id);
+    if (session.client_reference_id !== req.user.id.toString()) {
+      return next(new AppError('You are not authorized to verify this payment.', 403));
+    }
+  if (session.payment_status === 'paid') {
+    // The service handles idempotency, so we can just call it.
+    await orderService.createOrderFromStripeSession(session);
+      res.status(200).json({ status: 'success', message: 'Payment verified successfully.' });
     } else {
-      res.status(400).json({ status: 'fail', message: 'Payment not successful yet.' });
+      return next(new AppError('Payment not successful.', 400));
     }
-  } catch (error) {
-    next(error);
-  }
-};
+});
 
-export const getOrders = async (req, res, next) => {
-  try {
-    const orders = await orderService.getMyOrders(req.user.id);
-    res.status(200).json({ status: 'success', data: orders });
-  } catch (error) {
-    next(error);
+export const getMyOrders = asyncHandler(async (req, res, next) => {
+  const { orders, totalOrders } = await orderService.getMyOrders(req.user.id, req.query);
+  
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 10;
+
+  res.status(200).json({ 
+    status: 'success', 
+    results: orders.length, 
+    data: orders,
+    pagination: { currentPage: page, totalPages: Math.ceil(totalOrders / limit), totalOrders }
+  });
+});
+
+export const getOrderById = asyncHandler(async (req, res, next) => {
+  const order = await orderService.getOrderById(req.params.id);
+  if (!order) {
+    return next(new AppError('No order found with that ID', 404));
   }
-};
+  // Authorization check remains in the controller
+  if (order.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(new AppError('You are not authorized to view this order', 403));
+  }
+  res.status(200).json({ status: 'success', data: order });
+});
+
+// --- ADMIN CONTROLLERS ---
+
+export const getAllOrders = asyncHandler(async (req, res, next) => {
+  const orders = await orderService.getAllOrders();
+  res.status(200).json({
+    status: 'success',
+    results: orders.length,
+    data: orders,
+  });
+});
+
+export const updateOrderStatus = asyncHandler(async (req, res, next) => {
+  const order = await orderService.updateOrderStatus(req.params.id, req.body.status);
+  res.status(200).json({ status: 'success', data: order });
+});

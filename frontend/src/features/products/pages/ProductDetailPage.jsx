@@ -1,15 +1,17 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useParams, useOutletContext, useNavigate, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUserInfo } from '../../../features/auth/authSlice.js';
 import { Info, MessageSquare, ThumbsUp, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import ReviewSection from '../components/ReviewSection.jsx';
+import ProductReviews from '../components/ProductReviews.jsx';
 import PriceTag from '../components/PriceTag.jsx';
 import ProductRating from '../components/ProductRating.jsx';
 import ProductRecommendations from '../components/ProductRecommendations.jsx';
 import { useAddToCartMutation } from '../../../services/cartApi.js';
 import { useGetProductByIdQuery } from '../../../services/adminApi.js';
+import WishlistButton from '../../../shared/ui/WishlistButton';
+import BrowsingHistory from '../components/BrowsingHistory.jsx'; // Tambahkan .jsx
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -21,6 +23,35 @@ const ProductDetailPage = () => {
   const [addToCart, { isLoading: isAdding }] = useAddToCartMutation();
   
   const product = prodData?.data;
+
+  // --- LOGIKA BROWSING HISTORY ---
+  useEffect(() => {
+    if (product) {
+      let history = [];
+      try {
+        const stored = localStorage.getItem('browsingHistory');
+        history = stored ? JSON.parse(stored) : [];
+      } catch  {
+        history = [];
+      }
+      
+      // 1. Hapus jika produk sudah ada (agar nanti ditaruh di paling depan/terbaru)
+      const filtered = history.filter(h => h._id !== product._id);
+      
+      // 2. Buat object item baru (simpan data minimal saja)
+      const newItem = {
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0]
+      };
+
+      // 3. Tambahkan ke depan array & batasi maksimal 10 item
+      const newHistory = [newItem, ...filtered].slice(0, 10);
+      
+      localStorage.setItem('browsingHistory', JSON.stringify(newHistory));
+    }
+  }, [product]); // Jalankan setiap kali data produk berubah (ganti halaman produk)
 
   const handleAddToCart = useCallback(async () => {
     // Langkah A: Cek jika user belum login
@@ -76,12 +107,15 @@ const ProductDetailPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           
           {/* Kolom 1: Image */}
-          <div className="md:col-span-5 flex justify-center border-r border-gray-100 p-4">
+          <div className="md:col-span-5 flex justify-center border-r border-gray-100 p-4 relative">
             <img 
               src={product.images?.[0]} 
               alt={product.name} 
               className="max-h-[500px] object-contain sticky top-24"
             />
+            <div className="absolute top-2 right-2">
+              <WishlistButton productId={product._id} size={24} />
+            </div>
           </div>
 
           {/* Kolom 2: Basic Detail */}
@@ -180,12 +214,8 @@ const ProductDetailPage = () => {
               currentCategoryId={product.category?._id} 
               currentProductId={product._id} 
             />
-            <ReviewSection 
-              productId={product._id} 
-              productRating={product.rating} 
-              numReviews={product.numReviews} 
-              ratingsDistribution={product.ratingsDistribution}
-            />
+            <BrowsingHistory />
+            <ProductReviews productId={product._id} />
           </div>
         </div>
       </div>

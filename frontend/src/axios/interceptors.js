@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from "./base.js"; // Import URL pusat
 
 let isRefreshing = false;
 let failedQueue = [];
@@ -16,8 +17,16 @@ export const applyInterceptors = (axiosInstance) => {
   // Berjalan SEBELUM request dikirim ke backend
   axiosInstance.interceptors.request.use(
     (config) => {
-      // FIX: Ambil token langsung dari localStorage (Sinkron dengan authSlice/Redux)
-      const token = localStorage.getItem('token');
+      // FIX: Logika Pemilihan Token yang Lebih Cerdas
+      // Jangan memprioritaskan adminToken secara buta.
+      // Gunakan adminToken HANYA jika request menuju endpoint '/admin'
+      
+      const userToken = localStorage.getItem('token');
+      const adminToken = localStorage.getItem('adminToken');
+      const isAdminRoute = config.url?.includes('/admin');
+
+      const token = isAdminRoute ? adminToken : userToken;
+
       if (token) {
         // Sisipkan token ke header jika ada
         config.headers.Authorization = `Bearer ${token}`;
@@ -75,12 +84,13 @@ export const applyInterceptors = (axiosInstance) => {
               // SINKRONISASI: Endpoint backend kita adalah /auth/refresh-token
               // Pastikan baseURL sudah termasuk /api/v1
               const response = await axios.post(
-                `${originalRequest.baseURL}/auth/refresh-token`,
+                `${API_BASE_URL}/auth/refresh-token`, // Gunakan API_BASE_URL agar lebih stabil
                 {},
                 { withCredentials: true }
               );
 
-              const { accessToken } = response.data.data;
+              // FIX: Parsing response yang lebih aman (Support berbagai format response backend)
+              const accessToken = response.data?.token || response.data?.data?.accessToken || response.data?.accessToken;
               
               // FIX: Update localStorage agar request berikutnya pakai token baru
               localStorage.setItem('token', accessToken);

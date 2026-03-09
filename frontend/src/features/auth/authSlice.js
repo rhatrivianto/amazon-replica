@@ -11,11 +11,14 @@ const authSlice = createSlice({
   reducers: {
     setUserCredentials: (state, action) => {
       const { user, token } = action.payload;
-      state.userInfo = user;
-      state.token = token;
-      
-      localStorage.setItem('userInfo', JSON.stringify(user));
-      localStorage.setItem('token', token);
+      if (user) {
+        state.userInfo = user;
+        localStorage.setItem('userInfo', JSON.stringify(user));
+      }
+      if (token) {
+        state.token = token;
+        localStorage.setItem('token', token);
+      }
     },
     updateUser: (state, action) => {
       if (state.userInfo) {

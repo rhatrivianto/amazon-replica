@@ -14,6 +14,14 @@ export const addressApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Address'],
     }),
+    updateAddress: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/addresses/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['Address'],
+    }),
     deleteAddress: builder.mutation({
       query: (id) => ({
         url: `/addresses/${id}`,
@@ -24,4 +32,9 @@ export const addressApi = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useGetMyAddressesQuery, useAddAddressMutation, useDeleteAddressMutation } = addressApi;
+export const { 
+  useGetMyAddressesQuery, 
+  useAddAddressMutation, 
+  useUpdateAddressMutation, 
+  useDeleteAddressMutation 
+} = addressApi;

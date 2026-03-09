@@ -10,11 +10,15 @@ import { corsOptions } from "./config/cors.config.js";
 import apiRoutes from "./routes/index.js"; 
 import sellerContentRouter from "./routes/sellerContent.routes.js";
 import { globalErrorHandler } from "./middlewares/error.middleware.js";
-import { globalLimiter } from "./middlewares/rateLimit.middleware.js";
-import adminRoutes from "./routes/admin.route.js";
-import seedRoutes from "./routes/seed.route.js";
-import addressRoutes from "./routes/address.route.js";
-import sellerRoutes from "./routes/seller.route.js";
+import { globalLimiter } from "./middlewares/rateLimit.middleware.js"; // Impor limiter
+import authRoutes from "./routes/auth.routes.js"; // Impor router auth yang baru
+import adminRoutes from "./routes/admin.routes.js";
+import seedRoutes from "./routes/seed.routes.js";
+import addressRoutes from "./routes/address.routes.js";
+import sellerRoutes from "./routes/seller.routes.js";
+import wishlistRoutes from "./routes/wishlist.routes.js"; // 1. Import wishlist routes
+import orderRoutes from "./routes/order.routes.js";
+import userRoutes from "./routes/user.routes.js";
 
 
 
@@ -34,7 +38,7 @@ app.set('trust proxy', 1); // Penting untuk Railway/Heroku agar Rate Limiter & C
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Buat folder public jika belum ada
-const productDir = path.join(__dirname, '../public/img/products');
+const productDir = path.join(__dirname, "../public/img/products");
 if (!fs.existsSync(productDir)) {
   fs.mkdirSync(productDir, { recursive: true });
 }
@@ -65,8 +69,7 @@ app.use(cookieParser());
 // Static folder
 app.use('/public', express.static(path.join(__dirname, '../public')));
 
-// --- 4. RATE LIMITING ---
-app.use("/api", globalLimiter);
+// --- 4. RATE LIMITING (DIHAPUS DARI SINI) ---
 
 // --- Health Check (Untuk Monitoring Bash Script) ---
 app.get("/health", (req, res) => {
@@ -78,15 +81,21 @@ app.get("/health", (req, res) => {
 });
 
 // --- 5. ROUTES ---
+// Terapkan router auth yang baru. Limiter spesifik sudah ada di dalamnya.
+app.use("/api/v1/auth", authRoutes);
+
 // Semua rute (auth, products, orders) masuk lewat sini
-app.use("/api/v1/admin", adminRoutes);   // Untuk Super Admin (Kekuasaan penuh)
-app.use("/api/v1/seller", sellerRoutes); // Untuk Penjual (Hanya produk miliknya)
-app.use("/api/v1", apiRoutes);           // Untuk Pembeli & Umum (Read-only)
+app.use("/api/v1/admin", globalLimiter, adminRoutes);   // Terapkan limiter global
+app.use("/api/v1/seller", globalLimiter, sellerRoutes); // Terapkan limiter global
+app.use("/api/v1", globalLimiter, apiRoutes);           // Terapkan limiter global
+app.use("/api/v1/users", globalLimiter, userRoutes);    // Terapkan limiter global
 
-app.use("/api/v1/seed", seedRoutes); // Route khusus seeding
-app.use("/api/v1/addresses", addressRoutes); // Route alamat user
+app.use("/api/v1/seed", globalLimiter, seedRoutes);
+app.use("/api/v1/addresses", globalLimiter, addressRoutes);
+app.use("/api/v1/orders", globalLimiter, orderRoutes);
+app.use("/api/v1/wishlist", globalLimiter, wishlistRoutes);
 
-app.use('/api/v1/seller-contents', sellerContentRouter);
+app.use('/api/v1/seller-contents', globalLimiter, sellerContentRouter);
 
 // --- 6. SERVING FRONTEND IN PRODUCTION ---
 if (isProduction) {

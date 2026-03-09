@@ -8,9 +8,38 @@ import { env } from '../config/env.js';
 
 // Helper untuk membuat Token JWT
 const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  return jwt.sign({ id }, env.jwtSecret, {
+    expiresIn: env.jwtExpiresIn || '7d',
   });
+};
+
+// Helper untuk membuat Refresh Token
+const signRefreshToken = (id) => {
+  return jwt.sign({ id }, env.jwtRefreshSecret, {
+    expiresIn: env.jwtRefreshExpiresIn || '30d',
+  });
+};
+
+// Helper untuk mengirim token response (login & register)
+const createSendToken = (user, statusCode, res) => {
+  const accessToken = signToken(user._id);
+  const refreshToken = signRefreshToken(user._id);
+
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 hari
+    ),
+    httpOnly: true, // Mencegah akses via JavaScript (XSS attacks)
+    secure: env.nodeEnv === 'production', // Hanya kirim via HTTPS di production
+    sameSite: 'strict',
+  };
+
+  res.cookie('refreshToken', refreshToken, cookieOptions);
+
+  // Hapus password dari output
+  user.password = undefined;
+
+  res.status(statusCode).json({ success: true, token: accessToken, user });
 };
 
 // --- REGISTER ---
@@ -53,7 +82,7 @@ export const register = async (req, res) => {
 
     // URL Alternatif: Langsung ke Backend (Bypass Frontend jika 404)
     // Gunakan SERVER_URL dari env, atau fallback ke localhost jika dev
-    const serverUrl = process.env.SERVER_URL || 'http://localhost:8080';
+    const serverUrl = env.serverUrl || 'http://localhost:8080';
     const directVerifyUrl = `${serverUrl}/api/v1/auth/verify-email?token=${verificationToken}`;
 
     // --- DEBUG: Tampilkan Link di Log Railway agar bisa diklik manual ---
@@ -230,22 +259,39 @@ if (user.role === 'user' && !user.isEmailVerified) {
   return res.status(403).json({ success: false, message: 'Please verify your email first.' });
 }
 
-// 4. Jika semua lolos, buat Token
-const token = signToken(user._id);
+    // 4. Jika semua lolos, buat & kirim Token
+    createSendToken(user, 200, res);
 
-    res.status(200).json({
-      success: true,
-      token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        storeName: user.storeName // Tambahkan ini agar muncul di Dashboard
-      }
-    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// --- REFRESH TOKEN ---
+export const refreshToken = async (req, res) => {
+  try {
+    // 1. Ambil refresh token dari http-only cookie
+    const token = req.cookies.refreshToken;
+
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Unauthorized. No refresh token.' });
+    }
+
+    // 2. Verifikasi token
+    const decoded = jwt.verify(token, env.jwtRefreshSecret);
+
+    // 3. Cek apakah user masih ada
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'User not found.' });
+    }
+
+    // 4. Buat Access Token baru
+    const accessToken = signToken(user._id);
+
+    res.status(200).json({ success: true, token: accessToken });
+  } catch (error) {
+    return res.status(403).json({ success: false, message: 'Invalid or expired refresh token. Please login again.' });
   }
 };
 
@@ -295,5 +341,37 @@ export const registerSeller = async (req, res) => {
     // --- DEBUG: Tampilkan error detail di terminal server ---
     console.error("❌ LOGIN ERROR:", error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// --- UPDATE PASSWORD (LOGGED IN USER) ---
+export const updateMyPassword = async (req, res, next) => {
+  try {
+    // 1. Get user from collection
+    const user = await User.findById(req.user.id).select('+password');
+
+    // 2. Check if POSTed current password is correct
+    const { passwordCurrent, password, passwordConfirm } = req.body;
+    if (!passwordCurrent || !(await user.comparePassword(passwordCurrent))) {
+      return res.status(401).json({ success: false, message: 'Your current password is not correct.' });
+    }
+
+    if (password !== passwordConfirm) {
+      return res.status(400).json({ success: false, message: 'New password and confirmation do not match.' });
+    }
+
+    // 3. If so, update password
+    user.password = password;
+    await user.save(); // pre-save middleware will hash the password
+
+    // 4. Log user in, send JWT
+    const token = signToken(user._id);
+
+    res.status(200).json({
+      success: true,
+      token,
+    });
+  } catch (error) {
+    next(error);
   }
 };

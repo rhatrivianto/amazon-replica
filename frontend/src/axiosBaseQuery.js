@@ -1,74 +1,58 @@
-import axios from "axios";
-import apiInstance from "./axios/instance.js"; // Pastikan path ini benar
-import { toast } from "react-hot-toast";
-// Import action logout dari kedua slice
-import { logout } from './features/auth/authSlice.js';
-import { adminLogout } from './features/admin/auth/adminAuthSlice.js';
+import apiInstance from './axios/instance.js';
 
- export const axiosBaseQuery = () => async (args, api) => {
-  // 1. Normalisasi args (Support string shorthand dari RTK Query)
-  // Jika args hanya string (misal: "/admin/dashboard"), ubah jadi object { url: ... }
-  const queryArgs = typeof args === 'string' ? { url: args } : args;
+const axiosBaseQuery = ({ baseUrl } = { baseUrl: '' }) =>
+  async (args) => {
+    // 0. FIX UTAMA: Normalisasi Arguments (Support String vs Object)
+    // RTK Query mengirim string jika endpoint hanya me-return string (e.g. query: () => '/cart')
+    const requestConfig = typeof args === 'string' ? { url: args } : args;
+    const { url, method, data, body, params, headers } = requestConfig;
 
-  // Defensive check to prevent crash if a query is misconfigured
-  if (!queryArgs || typeof queryArgs.url !== 'string') {
-    const errorMessage = `Invalid query configuration: 'url' is missing or not a string. Received: ${JSON.stringify(args)}`;
-    console.error("axiosBaseQuery Error:", errorMessage);
-    return {
-      error: { status: 500, data: errorMessage }
-    };
-  }
-  const { url, method, data, body, params, headers } = queryArgs;
-
-  try {
-    // Cek apakah URL diawali dengan http (API Eksternal)
-    const isExternal = url.startsWith('http');
-    
-    // 1. Ambil Token dari Redux State (Cara paling aman & anti-circular dependency)
-    const state = api.getState();
-    // Cek token di adminAuth (Admin) atau auth (User biasa), atau fallback ke localStorage
-      // FIX: Tambahkan 'adminToken' di sini agar terbaca saat refresh page
-    const token = state.adminAuth?.token || localStorage.getItem('adminToken') || state.auth?.token || localStorage.getItem('token');
-
-    // 2. Siapkan Headers
-    const requestHeaders = { ...headers };
-    if (token && !isExternal) {
-      requestHeaders['Authorization'] = `Bearer ${token}`;
-    }
-
-    // Jika eksternal, gunakan axios murni. Jika internal, gunakan apiInstance.
-    const result = await (isExternal ? axios : apiInstance)({
-      url,
-      method,
-      data: data || body,
-      params,
-      headers: isExternal ? {} : requestHeaders, // Kirim headers yang sudah ada tokennya
-    });
-
-    return { data: result.data };
-  } catch (axiosError) {
-    // --- INTERCEPTOR 401: AUTO LOGOUT (AMAZON STYLE) ---
-    if (axiosError.response?.status === 401) {
-      const state = api.getState();
-      // Hanya jalankan jika masih ada token di state (mencegah loop)
-      if (state.auth.token || state.adminAuth.token) {
-        // Tampilkan pesan error ke user
-        toast.error("Sesi Anda telah berakhir. Silakan login kembali.", { 
-          id: 'session-expired-toast' // ID untuk mencegah toast duplikat
-        });
-        
-        // Dispatch kedua action logout untuk membersihkan semua sesi
-        api.dispatch(logout());
-        api.dispatch(adminLogout());
+    try {
+      // 1. Safety Check: Mencegah request ke /undefined
+      if (!url) {
+        return {
+          error: {
+            status: 400,
+            data: "Internal Error: URL is missing in API request",
+          },
+        };
       }
-    }
 
-    // Kembalikan error asli ke RTK Query agar bisa ditangkap di komponen jika perlu
-    return {
-      error: {
-        status: axiosError.response?.status || 500,
-        data: axiosError.response?.data?.message || axiosError.message || "Network Error",
-      },
-    };
-  }
-};
+      // 2. Normalisasi Method & Payload
+      const requestMethod = method ? method.toUpperCase() : 'GET';
+      
+      // FIX: Pastikan payload hanya dikirim untuk method yang mendukung body (POST, PUT, PATCH, DELETE)
+      const hasPayload = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(requestMethod);
+      
+      // FIX: Prioritaskan 'body' jika 'data' kosong/undefined (RTK Query biasanya pakai body)
+      // Kita gunakan logika yang lebih aman agar payload tidak tertukar
+      const requestData = hasPayload ? (body || data) : undefined;
+
+      // DEBUG: Cek di Console Browser apa yang dikirim
+      console.log(`🚀 [API Request] ${requestMethod} ${url}`, JSON.stringify(requestData, null, 2));
+
+      const result = await apiInstance({
+        url: baseUrl + url,
+        method: requestMethod,
+        data: requestData, 
+        params,
+        // FIX: Hanya sertakan headers jika ada isinya, agar tidak menimpa default Content-Type di instance.js
+        ...(headers && { headers }),
+      });
+      
+      // DEBUG: Cek Response
+      console.log(`✅ [API Response] ${requestMethod} ${url}`, result.data);
+
+      return { data: result.data };
+    } catch (axiosError) {
+      const err = axiosError;
+      return {
+        error: {
+          status: err.response?.status,
+          data: err.response?.data || err.message,
+        },
+      };
+    }
+  };
+
+export default axiosBaseQuery;

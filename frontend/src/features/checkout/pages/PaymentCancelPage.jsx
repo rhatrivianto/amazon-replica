@@ -9,11 +9,16 @@ const PaymentCancelPage = () => {
       </div>
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Cancelled</h1>
       <p className="text-gray-600 mb-6">
-        Don&apos;t worry, your cart is safe. You can try to checkout again when you&apos;re ready.
+        Your checkout process was cancelled. Your items are still in your cart.
       </p>
-      <Link to="/cart" className="bg-[#ffd814] hover:bg-[#f7ca00] px-6 py-2 rounded-full font-medium shadow-sm">
-        Return to Cart
-      </Link>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Link to="/cart" className="bg-[#ffd814] hover:bg-[#f7ca00] px-6 py-2 rounded-full font-medium shadow-sm">
+          Return to Cart
+        </Link>
+        <Link to="/" className="bg-gray-200 hover:bg-gray-300 px-6 py-2 rounded-full font-medium shadow-sm">
+          Continue Shopping
+        </Link>
+      </div>
     </div>
   );
 };

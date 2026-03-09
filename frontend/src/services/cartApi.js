@@ -5,7 +5,9 @@ export const cartApi = apiSlice.injectEndpoints({
     // 1. Mengambil data keranjang belanja
     getCart: builder.query({
       query: () => '/cart',
-      providesTags: ['Cart'],
+      // FIX: Gunakan fungsi callback untuk providesTags.
+      // Ini memastikan tag 'Cart' tetap didaftarkan MESKIPUN query awal error (misal 404 Not Found saat cart kosong).
+      providesTags: () => ['Cart'], 
     }),
 
     // 2. Menambah produk ke keranjang (PENTING untuk ProductGrid)

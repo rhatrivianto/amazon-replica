@@ -3,6 +3,8 @@ import ProductBadge from './ProductBadge';
 import ProductRating from './ProductRating';
 import PriceTag from './PriceTag';
 import LazyImage from './LazyImage';
+import WishlistButton from '../../../shared/ui/WishlistButton';
+
 
 const ProductCard = ({ product, onAddToCart }) => {
   if (!product) return null;
@@ -24,6 +26,10 @@ const ProductCard = ({ product, onAddToCart }) => {
         {product.isFeatured && <ProductBadge type="amazonsChoice" />}
         {discountPercentage > 10 && <ProductBadge type="limitedDeal" />}
       </div>
+
+      <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+    <WishlistButton productId={product._id} />
+        </div>
 
       <Link to={`/product/${product._id}`} className="group flex-1 flex flex-col">
         <div className="h-48 flex items-center justify-center mb-4 bg-gray-50 rounded-md p-2">

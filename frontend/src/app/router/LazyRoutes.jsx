@@ -20,8 +20,14 @@ export const CheckoutPage = lazy(() => import('../../features/checkout/pages/Che
 export const PaymentSuccessPage = lazy(() => import('../../features/checkout/pages/PaymentSuccessPage'));
 export const PaymentCancelPage = lazy(() => import('../../features/checkout/pages/PaymentCancelPage'));
 export const OrderPage = lazy(() => import('../../features/orders/pages/OrderPage'));
+export const OrderDetailPage = lazy(() => import('../../features/orders/pages/OrderDetailPage'));
 export const EmailVerificationPage = lazy(() => import('../../features/auth/pages/EmailVerificationPage'));
-export const UserAddressPage = lazy(() => import('../../features/address/pages/UserAddressPage'));
+export const AddressPage = lazy(() => import('../../features/account/pages/AddressPage'));
+export const AccountPage = lazy(() => import('../../features/account/pages/AccountPage'));
+export const LoginSecurityPage = lazy(() => import('../../features/account/pages/LoginSecurityPage'));
+export const ProfilePage = lazy(() => import('../../features/account/pages/ProfilePage')); // Pastikan baris ini ada
+export const WishlistPage = lazy(() => import('../../features/account/pages/WishlistPage'));   
+
 
 // --- SELL PAGES ---
 export const SellLayout = lazy(() => import('../../features/sells/components/SellLayout'));

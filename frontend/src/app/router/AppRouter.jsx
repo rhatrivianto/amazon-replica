@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, Outlet, useRouteError } from 'react-router-dom';
 import { Suspense, useState } from "react";
 import { useSelector } from 'react-redux';
 
@@ -26,7 +26,12 @@ import {
   PaymentSuccessPage,
   PaymentCancelPage, 
   OrderPage,
-  UserAddressPage,
+  OrderDetailPage,
+  AddressPage,
+  AccountPage,
+  LoginSecurityPage,
+  ProfilePage,
+  WishlistPage,
   SellLayout,
   SellPage,
   SellerGuidePage,
@@ -86,10 +91,22 @@ const ProtectedSeller = ({ children }) => {
   return children;
 };
 
+const ErrorBoundary = () => {
+  const error = useRouteError();
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen text-center p-4 bg-gray-50">
+      <h1 className="text-2xl font-bold text-red-600 mb-2">Oops! Something went wrong.</h1>
+      <p className="text-gray-600 mb-4">{error?.statusText || error?.message || "Unknown Error"}</p>
+      <a href="/" className="text-blue-600 hover:underline">Go back home</a>
+    </div>
+  );
+};
+
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
+    errorElement: <ErrorBoundary />, // Tambahkan Error Boundary di root
     children: [
       { index: true, element: <ProductBrowsePage /> },
       { path: 'cart', element: <CartPage /> },
@@ -99,8 +116,13 @@ const router = createBrowserRouter([
       { path: 'order/success', element: <PaymentSuccessPage /> },
       { path: 'order/cancel', element: <PaymentCancelPage /> },
       { path: 'orders', element: <OrderPage /> },
+      { path: 'orders/:id', element: <OrderDetailPage /> }, // Rute Baru
       { path: 'account/orders', element: <OrderPage /> }, // UBAH KE OrderPage (Konsisten)
-      { path: 'account/addresses', element: <UserAddressPage /> },
+      { path: 'account/addresses', element: <AddressPage /> },
+      { path: 'account', element: <AccountPage /> },
+      { path: 'account/security', element: <LoginSecurityPage /> },
+      { path: 'account/profile', element: <ProfilePage /> },
+      { path: 'account/wishlist', element: <WishlistPage /> }, // Rute Wishlist Baru
       { path: 'verify-email', element: <EmailVerificationPage /> },
       { path: 'privacy', element: <PrivacyPage /> },
       { path: 'terms', element: <TermsPage /> },
